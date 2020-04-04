@@ -29,7 +29,7 @@ HWND CreateMousePadWindow(HINSTANCE hInstance) {
         nullptr, nullptr, hInstance, nullptr);
     if (retval == NULL) {
         throw std::system_error(::GetLastError(), std::system_category(),
-            "Failed to create window.");
+            "Failed to create window");
     }
 
     return retval;
@@ -48,13 +48,14 @@ void RegisterWindowClass(HINSTANCE hInstance, WNDPROC wndProc) {
         wndClass.cbSize = sizeof(wndClass);
         wndClass.style = CS_CLASSDC;
         wndClass.lpfnWndProc = wndProc;
+        wndClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
         wndClass.hInstance = hInstance;
         wndClass.lpszClassName = ::WindowClass;
 
         if (!::RegisterClassEx(&wndClass)) {
             throw std::system_error(::GetLastError(),
                 std::system_category(),
-                "Failed to register window class.");
+                "Failed to register window class");
         }
     }
 }

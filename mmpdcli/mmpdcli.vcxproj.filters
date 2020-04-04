@@ -26,6 +26,9 @@
     <ClInclude Include="include\MagicMousePad\onexit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\MagicMousePad\MouseButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="include\MagicMousePad\onexit.inl">

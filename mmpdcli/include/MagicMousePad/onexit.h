@@ -32,7 +32,7 @@ namespace Detail {
             (*this)();
         }
 
-        inline void cancel(void) noexcept {
+        inline void Cancel(void) noexcept {
             this->_isInvoked = true;
         }
 

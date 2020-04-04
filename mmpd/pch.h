@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include "targetver.h"
 #include <WinSock2.h>
 
 #include <cassert>
+#include <cinttypes>
 #include <stdexcept>
 #include <string>
 #include <system_error>
@@ -16,6 +18,8 @@
 #include <dwrite.h>
 #include <tchar.h>
 #include <Windows.h>
+#include <windowsx.h>
 
+#include "MagicMousePad/MouseButton.h"
 #include "MagicMousePad/onexit.h"
 #include "MagicMousePad/ResourceHelper.h"

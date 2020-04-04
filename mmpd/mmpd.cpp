@@ -6,6 +6,7 @@
 #include "pch.h"
 
 #include "window.h"
+#include "State.h"
 
 
 /*
@@ -41,12 +42,63 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam,
         //}
         //break;
 
-    case WM_CLOSE:
-        ::PostQuitMessage(0);
-        return 0;
+        case WM_CLOSE:
+            ::PostQuitMessage(0);
+            return 0;
 
-    default:
-        return ::DefWindowProc(hWnd, msg, wParam, lParam);
+        case WM_KEYDOWN:
+            State::Retrieve(hWnd)->OnKeyDown(wParam);
+            return 0;
+
+        case WM_KEYUP:
+            State::Retrieve(hWnd)->OnKeyUp(wParam);
+            return 0;
+
+        case WM_LBUTTONDOWN:
+            State::Retrieve(hWnd)->OnMouseDown(
+                MagicMousePad::MouseButton::Left);
+            return 0;
+
+        case WM_LBUTTONUP:
+            State::Retrieve(hWnd)->OnMouseUp(
+                MagicMousePad::MouseButton::Left);
+            return 0;
+
+        case WM_MBUTTONDOWN:
+            State::Retrieve(hWnd)->OnMouseDown(
+                MagicMousePad::MouseButton::Middle);
+            return 0;
+
+        case WM_MBUTTONUP:
+            State::Retrieve(hWnd)->OnMouseUp(
+                MagicMousePad::MouseButton::Middle);
+            return 0;
+
+        case WM_MOUSEMOVE:
+            State::Retrieve(hWnd)->OnMouseMove(GET_X_LPARAM(lParam),
+                GET_Y_LPARAM(lParam));
+            return 0;
+
+        case WM_RBUTTONDOWN:
+            State::Retrieve(hWnd)->OnMouseDown(
+                MagicMousePad::MouseButton::Right);
+            return 0;
+
+        case WM_RBUTTONUP:
+            State::Retrieve(hWnd)->OnMouseUp(
+                MagicMousePad::MouseButton::Right);
+            return 0;
+
+        case WM_PAINT:
+            State::Retrieve(hWnd)->OnDraw();
+            return 0;
+
+        case WM_SIZE:
+            State::Retrieve(hWnd)->OnSize();
+            return 0;
+
+        default:
+            return ::DefWindowProc(hWnd, msg, wParam, lParam);
     }
 }
 
@@ -69,6 +121,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         auto guardWindow = ::MagicMousePad::OnExit([hWnd]() {
             ::DestroyWindow(hWnd);
             });
+
+        State state(hWnd);
 
         ::ShowWindow(hWnd, cmdShow);
 

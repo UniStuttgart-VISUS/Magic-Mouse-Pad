@@ -22,6 +22,7 @@
     <ClCompile Include="ResourceHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\MagicMousePad\MouseButton.h" />
     <ClInclude Include="include\MagicMousePad\onexit.h" />
     <ClInclude Include="include\MagicMousePad\ResourceHelper.h" />
   </ItemGroup>
