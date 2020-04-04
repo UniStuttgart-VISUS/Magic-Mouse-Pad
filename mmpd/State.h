@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "Renderer.h"
+
 
 /// <summary>
 /// Container for the application state, which is attached as user data to the
@@ -22,7 +24,9 @@ public:
 
     ~State(void);
 
-    void OnDraw(void);
+    inline void OnDraw(void) {
+        this->_renderer.Draw();
+    }
 
     void OnKeyDown(WPARAM key);
 
@@ -34,22 +38,18 @@ public:
 
     void OnMouseUp(const MagicMousePad::MouseButton button);
 
-    void OnSize(void);
+    inline void OnSize(void) {
+        this->_renderer.Resize(Renderer::GetSize(this->_hWnd));
+    }
 
 private:
 
-    void CreateRenderTarget(void);
+    inline D2D1_SIZE_U GetSize(void) const {
+        return Renderer::GetSize(this->_hWnd);
+    }
 
-    D2D1_SIZE_U GetSize(void) const;
-
-
-    ID2D1Factory *_d2d;
-    IDWriteFactory *_dwrite;
     WPARAM _escapeKey;
     HWND _hWnd;
     bool _isActive;
-    ID2D1HwndRenderTarget *_rt;
-    float _scaleX;
-    float _scaleY;
-
+    Renderer _renderer;
 };

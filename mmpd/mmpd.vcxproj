@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="mmpd.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="window.h" />
@@ -169,6 +170,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>

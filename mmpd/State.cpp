@@ -38,96 +38,17 @@ State *State::Retrieve(HWND hWnd) {
 /*
  * State::State
  */
-State::State(HWND hWnd) : _d2d(nullptr), _dwrite(nullptr),
-        _escapeKey(VK_ESCAPE), _hWnd(hWnd), _isActive(false),
-        _rt(nullptr), _scaleX(1.0f), _scaleY(1.0f) {
-    using namespace MagicMousePad;
-    {
-        auto hr = ::D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
-            &this->_d2d);
-        if (FAILED(hr)) {
-            throw std::system_error(hr, std::system_category(),
-                "Failed to create Direct2D factory");
-        }
-    }
-    auto undoD2D = OnExit([this]() { this->_d2d->Release(); });
-
-    this->CreateRenderTarget();
-    auto undoRt = OnExit([this]() { this->_rt->Release(); });
-
-    {
-        auto hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-            __uuidof(IDWriteFactory),
-            reinterpret_cast<IUnknown **>(&this->_dwrite));
-        if (FAILED(hr)) {
-            throw std::system_error(hr, std::system_category(),
-                "Failed to create DirectWrite factory");
-        }
-    }
-    auto undoDwrite = OnExit([this]() { this->_dwrite->Release(); });
-
-    //{
-    //    auto hr = this->_rt->CreateSolidColorBrush(
-    //        D2D1::ColorF(D2D1::ColorF::LightGray),
-    //        &this->_brushActive);
-    //}
-    //auto undoBrushActive = OnExit([this]() { this->_brushActive->Release(); });
-
-    //{
-    //    auto hr = this->_rt->CreateSolidColorBrush(
-    //        D2D1::ColorF(D2D1::ColorF::DarkGray),
-    //        &this->_brushInactive);
-    //}
-    //auto undoBrushInactive = OnExit([this]() { this->_brushInactive->Release(); });
-
-    // Compute scaling of mouse coordinates to DIPs.
-    {
-        UINT dpi = ::GetDpiForWindow(this->_hWnd);
-        this->_scaleX = dpi / 96.0f;
-        this->_scaleY = dpi / 96.0f;
-    }
-
-    // Attach as user data to the window handle.
+State::State(HWND hWnd) : _escapeKey(VK_ESCAPE), _hWnd(hWnd), _isActive(false),
+        _renderer(hWnd) {
+    this->_renderer.SetBackgroundColour(D2D1::ColorF::DarkGray);
     State::Attach(*this, hWnd);
-
-    // If all succeeded, cancel all undos.
-    undoD2D.Cancel();
-    undoRt.Cancel();
-    undoDwrite.Cancel();
-    //undoBrushActive.Cancel();
-    //undoBrushInactive.Cancel();
 }
 
 
 /*
  * State::~State
  */
-State::~State(void) {
-    assert(this->_d2d != nullptr);
-    this->_d2d->Release();
-    assert(this->_dwrite != nullptr);
-    this->_dwrite->Release();
-    assert(this->_rt != nullptr);
-    this->_rt->Release();
-}
-
-
-/*
- * State::OnDraw
- */
-void State::OnDraw(void) {
-    assert(this->_rt != nullptr);
-
-    this->_rt->BeginDraw();
-
-    auto backgroundColour = this->_isActive
-        ? D2D1::ColorF(D2D1::ColorF::LightGray)
-        : D2D1::ColorF(D2D1::ColorF::DarkGray);
-    this->_rt->Clear(backgroundColour);
-
-
-    this->_rt->EndDraw();
-}
+State::~State(void) { }
 
 
 /*
@@ -138,6 +59,7 @@ void State::OnKeyDown(WPARAM key) {
         ::OutputDebugString(_T("Mouse released by mouse pad.\r\n"));
         ::ReleaseCapture();
         this->_isActive = false;
+        this->_renderer.SetBackgroundColour(D2D1::ColorF::DarkGray);
     }
 }
 
@@ -155,6 +77,7 @@ void State::OnMouseDown(const MagicMousePad::MouseButton button) {
     if (!this->_isActive) {
         ::OutputDebugString(_T("Mouse captured by mouse pad.\r\n"));
         this->_isActive = true;
+        this->_renderer.SetBackgroundColour(D2D1::ColorF::LightGray);
         ::SetCapture(this->_hWnd);
     }
 }
@@ -171,26 +94,25 @@ void State::OnMouseMove(const INT x, const INT y) {
 
         if (pos.x < 0) {
             ::OutputDebugString(_T("Wrap left.\r\n"));
-            pos.x += static_cast<INT>(size.width);
-            assert(pos.x < size.width);
+            pos.x += static_cast<LONG>(size.width);
             isWrap = true;
         }
 
-        if (pos.x > size.width) {
+        if (pos.x > static_cast<LONG>(size.width)) {
             ::OutputDebugString(_T("Wrap right.\r\n"));
-            pos.x -= static_cast<INT>(size.width);
+            pos.x -= static_cast<LONG>(size.width);
             isWrap = true;
         }
 
         if (pos.y < 0) {
             ::OutputDebugString(_T("Wrap top.\r\n"));
-            pos.y += static_cast<INT>(size.height);
+            pos.y += static_cast<LONG>(size.height);
             isWrap = true;
         }
 
-        if (pos.y > size.height) {
+        if (pos.y > static_cast<LONG>(size.height)) {
             ::OutputDebugString(_T("Wrap bottom.\r\n"));
-            pos.y -= static_cast<INT>(size.height);
+            pos.y -= static_cast<LONG>(size.height);
             isWrap = true;
         }
 
@@ -206,49 +128,4 @@ void State::OnMouseMove(const INT x, const INT y) {
  * State::OnMouseUp
  */
 void State::OnMouseUp(const MagicMousePad::MouseButton button) {
-}
-
-
-/*
- * State::OnSize
- */
-void State::OnSize(void) {
-    assert(this->_rt != nullptr);
-    this->_rt->Resize(this->GetSize());
-}
-
-
-/*
- * State::CreateRenderTarget
- */
-void State::CreateRenderTarget(void) {
-    assert(this->_rt == nullptr);
-
-    auto size = this->GetSize();
-
-    auto hr = this->_d2d->CreateHwndRenderTarget(
-        D2D1::RenderTargetProperties(),
-        D2D1::HwndRenderTargetProperties(this->_hWnd, size),
-        &this->_rt);
-    if (FAILED(hr)) {
-        throw std::system_error(hr, std::system_category(),
-            "Failed to create Direct2D render target");
-    }
-}
-
-
-/*
- * State::GetSize
- */
-D2D1_SIZE_U State::GetSize(void) const {
-    assert(this->_hWnd != NULL);
-
-    RECT wndRect;
-    if (!::GetClientRect(this->_hWnd, &wndRect)) {
-        throw std::system_error(::GetLastError(), std::system_category(),
-            "Failed to retrieve window client area");
-    }
-
-    return D2D1::SizeU(wndRect.right - wndRect.left,
-        wndRect.bottom - wndRect.top);
 }
