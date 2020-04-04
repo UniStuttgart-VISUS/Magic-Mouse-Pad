@@ -59,25 +59,30 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         LPTSTR cmdLine, int cmdShow) {
     UNREFERENCED_PARAMETER(hPrevInstance);
 
-    ::RegisterWindowClass(hInstance, ::WndProc);
-    auto guardWindowClass = MagicMousePad::OnExit([hInstance]() {
-        ::UnregisterWindowClass(hInstance);
-        });
+    try {
+        ::RegisterWindowClass(hInstance, ::WndProc);
+        auto guardWindowClass = MagicMousePad::OnExit([hInstance]() {
+            ::UnregisterWindowClass(hInstance);
+            });
 
-    auto hWnd = ::CreateMousePadWindow(hInstance);
-    auto guardWindow = ::MagicMousePad::OnExit([hWnd]() {
-        ::DestroyWindow(hWnd);
-        });
+        auto hWnd = ::CreateMousePadWindow(hInstance);
+        auto guardWindow = ::MagicMousePad::OnExit([hWnd]() {
+            ::DestroyWindow(hWnd);
+            });
 
-    ::ShowWindow(hWnd, cmdShow);
+        ::ShowWindow(hWnd, cmdShow);
 
-    MSG msg;
-    while (::GetMessage(&msg, nullptr, 0, 0)) {
-        ::TranslateMessage(&msg);
-        ::DispatchMessage(&msg);
+        MSG msg;
+        while (::GetMessage(&msg, nullptr, 0, 0)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+
+        return static_cast<int>(msg.wParam);
+    } catch (std::exception & ex) {
+        ::MessageBoxA(NULL, ex.what(), nullptr, MB_OK | MB_ICONERROR);
+        return -1;
     }
-
-    return static_cast<int>(msg.wParam);
 
 #if 0
     // Initialize global strings
