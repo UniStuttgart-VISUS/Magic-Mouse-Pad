@@ -12,6 +12,8 @@
 
 #include <ws2ipdef.h>
 
+#include "MagicMousePad/serveraddress.h"
+
 
 #if !defined(_WIN32)
 #define SOCKET_ERROR(-1)
@@ -88,7 +90,15 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
         throw this->GetSocketError("Failed to create UDP socket");
     }
 
-    //::bind(this->_socket, )
+    {
+        sockaddr_storage address;
+        auto endPoint = InitialiseServerAddress(address,
+            static_cast<std::uint16_t>(protocol), port);
+        if (::bind(this->_socket, endPoint.first, endPoint.second)
+                == SOCKET_ERROR) {
+            throw this->GetSocketError("Failed to bind socket");
+        }
+    }
 
     assert(!this->_receiver.joinable());
     this->_receiver = std::thread(std::bind(&MouseSubscriber::Receive, this));
@@ -108,12 +118,12 @@ void MagicMousePad::MouseSubscriber::Subscribe(const EndPointType& server,
     switch (a->sa_family) {
         case AF_INET:
             this->Subscribe(port, AddressFamily::InterNetwork);
-            l = sizeof(struct sockaddr_in);
+            l = sizeof(sockaddr_in);
             break;
 
         case AF_INET6:
             this->Subscribe(port, AddressFamily::InterNetwork6);
-            l = sizeof(struct sockaddr_in6);
+            l = sizeof(sockaddr_in6);
             break;
 
         default:
@@ -180,13 +190,13 @@ void MagicMousePad::MouseSubscriber::Receive(void) {
 #endif /* defined(_WIN32) */
 
     std::vector<char> buffer(sizeof(Header), 0);
-    struct sockaddr_storage peer;
+    sockaddr_storage peer;
     int peerLen = 0;
 
     while (true) {
         {
             auto cnt = ::recvfrom(this->_socket, buffer.data(), sizeof(Header),
-                0, reinterpret_cast<struct sockaddr *>(&peer), &peerLen);
+                0, reinterpret_cast<sockaddr *>(&peer), &peerLen);
             if (cnt <= 0) {
                 break;
             }
@@ -201,7 +211,7 @@ void MagicMousePad::MouseSubscriber::Receive(void) {
         {
             auto size = ToHostOrder(header->Length) - sizeof(Header);
             auto cnt = ::recvfrom(this->_socket, buffer.data() + sizeof(Header),
-                size, 0, reinterpret_cast<struct sockaddr *>(&peer), &peerLen);
+                size, 0, reinterpret_cast<sockaddr *>(&peer), &peerLen);
             if (cnt <= 0) {
                 break;
             }

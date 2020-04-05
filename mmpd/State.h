@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Renderer.h"
+#include "Server.h"
 
 
 /// <summary>
@@ -48,4 +49,5 @@ private:
     HWND _hWnd;
     bool _isActive;
     Renderer _renderer;
+    Server _server;
 };
