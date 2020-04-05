@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MouseSubscriber.cpp" />
+    <ClCompile Include="receive.cpp" />
     <ClCompile Include="ResourceHelper.cpp" />
     <ClCompile Include="serveraddress.cpp" />
   </ItemGroup>
@@ -29,6 +30,7 @@
     <ClInclude Include="include\MagicMousePad\MouseButton.h" />
     <ClInclude Include="include\MagicMousePad\MouseSubscriber.h" />
     <ClInclude Include="include\MagicMousePad\onexit.h" />
+    <ClInclude Include="include\MagicMousePad\receive.h" />
     <ClInclude Include="include\MagicMousePad\ResourceHelper.h" />
     <ClInclude Include="include\MagicMousePad\serveraddress.h" />
   </ItemGroup>

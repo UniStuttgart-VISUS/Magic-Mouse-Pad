@@ -19,6 +19,11 @@ public:
     Client(const struct sockaddr *address, const int addressLength);
 
     /// <summary>
+    /// Applies any optional clipping to the given coordinates.
+    /// </summary>
+    void ClipPosition(std::int32_t& x, std::int32_t& y) const;
+
+    /// <summary>
     /// Gets the end point address of the client.
     /// </summary>
     inline const struct sockaddr *GetAddress(void) const {
@@ -31,6 +36,12 @@ public:
     inline int GetAddressLength(void) const {
         return this->_addressLength;
     }
+
+    /// <summary>
+    /// Answer whether the client has the specified address.
+    /// </summary>
+    bool IsAddress(const struct sockaddr& address,
+        const int addressLength) const;
 
     /// <summary>
     /// Sets the clipping area to the value reported by the client.

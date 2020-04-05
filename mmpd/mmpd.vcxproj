@@ -191,6 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="Server.inl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\mmpdcli\mmpdcli.vcxproj">

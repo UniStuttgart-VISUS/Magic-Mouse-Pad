@@ -12,6 +12,7 @@
 
 #include <ws2ipdef.h>
 
+#include "MagicMousePad/receive.h"
 #include "MagicMousePad/serveraddress.h"
 
 
@@ -101,7 +102,9 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
     }
 
     assert(!this->_receiver.joinable());
-    this->_receiver = std::thread(std::bind(&MouseSubscriber::Receive, this));
+    this->_receiver = std::thread(MagicMousePad::Receive, this->_socket,
+        std::bind(&MouseSubscriber::OnMessage, this, std::placeholders::_1,
+            std::placeholders::_2, std::placeholders::_3));
 }
 
 
@@ -131,6 +134,7 @@ void MagicMousePad::MouseSubscriber::Subscribe(const EndPointType& server,
                 "either be an IPv4 or IPv6 address");
     }
 
+    ToNetworkOrder(subscription.Header);
     ToNetworkOrder(subscription);
 
     if (::sendto(this->_socket, reinterpret_cast<const char *>(&subscription),
@@ -175,92 +179,45 @@ std::system_error MagicMousePad::MouseSubscriber::GetSocketError(
 
 
 /*
- * MagicMousePad::MouseSubscriber::Receive
+ * MagicMousePad::MouseSubscriber::OnMessage
  */
-void MagicMousePad::MouseSubscriber::Receive(void) {
-#if defined(_WIN32)
-    {
-        WSADATA wsaData;
-        auto status = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (status != NO_ERROR) {
-            throw std::system_error(status, std::system_category(),
-                "Failed to start Winsock 2.2 in receiver thread");
-        }
+void MagicMousePad::MouseSubscriber::OnMessage(Header *header,
+        const sockaddr &, int) {
+    switch (header->ID) {
+        case MousePositionMessageID: {
+            auto m = reinterpret_cast<MousePositionMessage *>(header);
+            ToHostOrder(*m);
+            if (this->CheckSequenceNumber(m->Header)) {
+                this->OnMouseMove(m->X, m->Y);
+            }
+        } break;
+
+        case MouseDownMessageID: {
+            auto m = reinterpret_cast<MouseDownMessage *>(header);
+            ToHostOrder(*m);
+            if (this->CheckSequenceNumber(m->Header)) {
+                this->OnMouseDown(static_cast<MouseButton>(m->Button));
+            }
+        } break;
+
+        case MouseUpMessageID: {
+            auto m = reinterpret_cast<MouseUpMessage *>(header);
+            ToHostOrder(*m);
+            if (this->CheckSequenceNumber(m->Header)) {
+                this->OnMouseUp(static_cast<MouseButton>(m->Button));
+            }
+        } break;
+
+        case MouseVisibilityMessageID: {
+            auto m = reinterpret_cast<MouseVisibilityMessage *>(header);
+            ToHostOrder(*m);
+            if (this->CheckSequenceNumber(m->Header)) {
+                this->OnMouseVisibilityChanged(m->IsVisible != 0);
+            }
+        } break;
+
+        default:
+            // Ignore any message we do not know.
+            break;
     }
-#endif /* defined(_WIN32) */
-
-    std::vector<char> buffer(sizeof(Header), 0);
-    sockaddr_storage peer;
-    int peerLen = 0;
-
-    while (true) {
-        {
-            auto cnt = ::recvfrom(this->_socket, buffer.data(), sizeof(Header),
-                0, reinterpret_cast<sockaddr *>(&peer), &peerLen);
-            if (cnt <= 0) {
-                break;
-            }
-        }
-
-        auto header = reinterpret_cast<Header *>(buffer.data());
-        if (buffer.size() < header->Length) {
-            buffer.resize(header->Length);
-        }
-        header = reinterpret_cast<Header *>(buffer.data());
-
-        {
-            auto size = ToHostOrder(header->Length) - sizeof(Header);
-            auto cnt = ::recvfrom(this->_socket, buffer.data() + sizeof(Header),
-                size, 0, reinterpret_cast<sockaddr *>(&peer), &peerLen);
-            if (cnt <= 0) {
-                break;
-            }
-
-            switch (header->ID) {
-                case MousePositionMessageID: {
-                    auto m = reinterpret_cast<MousePositionMessage *>(
-                        buffer.data());
-                    ToHostOrder(*m);
-                    if (this->CheckSequenceNumber(m->Header)) {
-                        this->OnMouseMove(m->X, m->Y);
-                    }
-                } break;
-
-                case MouseDownMessageID: {
-                    auto m = reinterpret_cast<MouseDownMessage *>(
-                        buffer.data());
-                    ToHostOrder(*m);
-                    if (this->CheckSequenceNumber(m->Header)) {
-                        this->OnMouseDown(static_cast<MouseButton>(m->Button));
-                    }
-                } break;
-
-                case MouseUpMessageID: {
-                    auto m = reinterpret_cast<MouseUpMessage *>(
-                        buffer.data());
-                    ToHostOrder(*m);
-                    if (this->CheckSequenceNumber(m->Header)) {
-                        this->OnMouseUp(static_cast<MouseButton>(m->Button));
-                    }
-                } break;
-
-                case MouseVisibilityMessageID: {
-                    auto m = reinterpret_cast<MouseVisibilityMessage *>(
-                        buffer.data());
-                    ToHostOrder(*m);
-                    if (this->CheckSequenceNumber(m->Header)) {
-                        this->OnMouseVisibilityChanged(m->IsVisible != 0);
-                    }
-                } break;
-
-                default:
-                    // Ignore any message we do not know.
-                    break;
-            }
-        }
-    }
-
-#if defined(_WIN32)
-    ::WSACleanup();
-#endif /* defined(_WIN32) */
 }

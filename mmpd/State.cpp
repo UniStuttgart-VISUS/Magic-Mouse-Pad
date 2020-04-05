@@ -80,6 +80,12 @@ void State::OnMouseDown(const MagicMousePad::MouseButton button) {
         this->_renderer.SetBackgroundColour(D2D1::ColorF::LightGray);
         ::SetCapture(this->_hWnd);
     }
+
+    if (this->_isActive) {
+        MagicMousePad::MouseUpMessage msg;
+        msg.Button = static_cast<decltype(msg.Button)>(button);
+        this->_server.Send(msg);
+    }
 }
 
 
@@ -120,6 +126,11 @@ void State::OnMouseMove(const INT x, const INT y) {
             ::ClientToScreen(this->_hWnd, &pos);
             ::SetCursorPos(pos.x, pos.y);
         }
+
+        MagicMousePad::MousePositionMessage msg;
+        msg.X = pos.x;  // TODO
+        msg.Y = pos.y;  // TODO
+        this->_server.Send(msg);
     }
 }
 
@@ -128,4 +139,9 @@ void State::OnMouseMove(const INT x, const INT y) {
  * State::OnMouseUp
  */
 void State::OnMouseUp(const MagicMousePad::MouseButton button) {
+    if (this->_isActive) {
+        MagicMousePad::MouseUpMessage msg;
+        msg.Button = static_cast<decltype(msg.Button)>(button);
+        this->_server.Send(msg);
+    }
 }

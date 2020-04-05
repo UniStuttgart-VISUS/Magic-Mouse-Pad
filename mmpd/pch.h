@@ -28,5 +28,6 @@
 #include "MagicMousePad/messages.h"
 #include "MagicMousePad/MouseButton.h"
 #include "MagicMousePad/onexit.h"
+#include "MagicMousePad/receive.h"
 #include "MagicMousePad/ResourceHelper.h"
 #include "MagicMousePad/serveraddress.h"

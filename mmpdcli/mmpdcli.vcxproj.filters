@@ -24,6 +24,9 @@
     <ClCompile Include="serveraddress.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="receive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\MagicMousePad\ResourceHelper.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\MagicMousePad\serveraddress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MagicMousePad\receive.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

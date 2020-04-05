@@ -150,9 +150,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="SubscriptionMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(SubscriptionMessage &msg) {
-        ToHostOrder(msg.Header);
         msg.Left = ToHostOrder(msg.Left);
         msg.Top = ToHostOrder(msg.Top);
         msg.Width = ToHostOrder(msg.Width);
@@ -163,9 +167,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="SubscriptionMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(SubscriptionMessage &msg) {
-        ToNetworkOrder(msg.Header);
         msg.Left = ToNetworkOrder(msg.Left);
         msg.Top = ToNetworkOrder(msg.Top);
         msg.Width = ToNetworkOrder(msg.Width);
@@ -215,9 +223,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MousePositionMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MousePositionMessage &msg) {
-        ToHostOrder(msg.Header);
         msg.X = ToHostOrder(msg.X);
         msg.Y = ToHostOrder(msg.Y);
     }
@@ -226,9 +238,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MousePositionMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MousePositionMessage &msg) {
-        ToNetworkOrder(msg.Header);
         msg.X = ToNetworkOrder(msg.X);
         msg.Y = ToNetworkOrder(msg.Y);
     }
@@ -271,9 +287,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseDownMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MouseDownMessage &msg) {
-        ToHostOrder(msg.Header);
         msg.Button = ToHostOrder(std::underlying_type<MouseButton>::type(
             msg.Button));
     }
@@ -282,9 +302,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseDownMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
     /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MouseDownMessage &msg) {
-        ToNetworkOrder(msg.Header);
         msg.Button = ToNetworkOrder(std::underlying_type<MouseButton>::type(
             msg.Button));
     }
@@ -327,8 +351,13 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseUpMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MouseUpMessage &msg) {
-        ToHostOrder(msg.Header);
         msg.Button = ToHostOrder(std::underlying_type<MouseButton>::type(
             msg.Button));
     }
@@ -336,9 +365,14 @@ namespace MagicMousePad {
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
-    /// </summarySubscriptionMessage
+    /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseUpMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MouseUpMessage &msg) {
-        ToNetworkOrder(msg.Header);
         msg.Button = ToNetworkOrder(std::underlying_type<MouseButton>::type(
             msg.Button));
     }
@@ -381,17 +415,27 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseVisibilityMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MouseVisibilityMessage &msg) {
-        ToHostOrder(msg.Header);
         msg.IsVisible = ToHostOrder(msg.IsVisible);
     }
 
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
-    /// </summarySubscriptionMessage
+    /// </summary>
+    /// <remarks>
+    /// This function only converts the message body, the
+    /// <see cref="MouseVisibilityMessage::Header" /> must be converted
+    /// separately.
+    /// </remarks>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MouseVisibilityMessage &msg) {
-        ToNetworkOrder(msg.Header);
         msg.IsVisible = ToNetworkOrder(msg.IsVisible);
     }
 

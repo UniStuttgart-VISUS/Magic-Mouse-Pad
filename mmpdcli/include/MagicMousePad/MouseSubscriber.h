@@ -174,7 +174,7 @@ namespace MagicMousePad {
 
         std::system_error GetSocketError(const std::string& msg);
 
-        void Receive(void);
+        void OnMessage(Header *header, const sockaddr&, int);
 
         std::thread _receiver;
         decltype(Header::SequenceNumber) _sequenceNumber;
