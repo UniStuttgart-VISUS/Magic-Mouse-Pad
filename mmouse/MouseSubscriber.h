@@ -5,12 +5,20 @@
 
 #pragma once
 
+#include "CommandLine.h"
+
 
 /// <summary>
 /// Subscribes to updates from the magic mouse pad and moves the mouse pointer
 /// accordingly.
 /// </summary>
 class MouseSubscriber : MagicMousePad::MouseSubscriber {
+
+public:
+
+    MouseSubscriber(const CommandLine& cmdLine);
+
+protected:
 
     /// <inheritdoc />
     void OnMouseMove(const std::int32_t x, const std::int32_t y) override;

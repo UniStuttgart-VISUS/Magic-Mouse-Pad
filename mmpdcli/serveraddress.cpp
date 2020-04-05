@@ -22,10 +22,11 @@ std::pair<sockaddr *, int> MagicMousePad::InitialiseServerAddress(
         const std::uint16_t port) {
     switch (addressFamily) {
             case AF_INET: {
+                auto addr = static_cast<std::uint32_t>(INADDR_ANY);
                 auto a = reinterpret_cast<sockaddr_in *>(&dst);
                 a->sin_family = AF_INET;
-                a->sin_addr.S_un.S_addr = INADDR_ANY;
-                a->sin_port = MagicMousePad::ToNetworkOrder(port);
+                a->sin_addr.S_un.S_addr = ToNetworkOrder(addr);
+                a->sin_port = ToNetworkOrder(port);
                 auto b = reinterpret_cast<sockaddr *>(a);
                 return std::make_pair(b, sizeof(*a));
             }
@@ -34,7 +35,7 @@ std::pair<sockaddr *, int> MagicMousePad::InitialiseServerAddress(
                 auto a = reinterpret_cast<sockaddr_in6 *>(&dst);
                 a->sin6_family = AF_INET6;
                 a->sin6_addr = ::in6addr_any;
-                a->sin6_port = MagicMousePad::ToNetworkOrder(port);
+                a->sin6_port = ToNetworkOrder(port);
                 auto b = reinterpret_cast<sockaddr *>(a);
                 return std::make_pair(b, sizeof(*a));
             }

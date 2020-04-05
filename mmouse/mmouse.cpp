@@ -5,6 +5,7 @@
 
 #include "pch.h"
 
+#include "CommandLine.h"
 #include "MouseSubscriber.h"
 
 
@@ -13,5 +14,10 @@
 /// </summary>
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         LPTSTR cmdLine, int cmdShow) {
+    CommandLine c(cmdLine);
+    MouseSubscriber s(c);
+
+
+    ::Sleep(10000);
     return 0;
 }

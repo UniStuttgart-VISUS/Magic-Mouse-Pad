@@ -17,7 +17,8 @@
 
 
 #if !defined(_WIN32)
-#define SOCKET_ERROR(-1)
+#define SOCKET_ERROR (-1)
+#define INVALID_SOCKET (-1)
 #endif /* !defined(_WIN32) */
 
 
@@ -25,6 +26,7 @@
  * MagicMousePad::MouseSubscriber::~MouseSubscriber
  */
 MagicMousePad::MouseSubscriber::~MouseSubscriber(void) {
+    this->Unsubscribe();
 }
 
 
@@ -32,7 +34,7 @@ MagicMousePad::MouseSubscriber::~MouseSubscriber(void) {
  * MagicMousePad::MouseSubscriber::MouseSubscriber
  */
 MagicMousePad::MouseSubscriber::MouseSubscriber(void)
-    : _sequenceNumber(0), _socket(SOCKET_ERROR) { }
+    : _sequenceNumber(0), _socket(INVALID_SOCKET) { }
 
 
 /*
@@ -87,7 +89,7 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
 
     this->_socket = ::socket(static_cast<int>(protocol), SOCK_DGRAM,
         IPPROTO_UDP);
-    if (this->_socket == SOCKET_ERROR) {
+    if (this->_socket == INVALID_SOCKET) {
         throw this->GetSocketError("Failed to create UDP socket");
     }
 
@@ -148,6 +150,10 @@ void MagicMousePad::MouseSubscriber::Subscribe(const EndPointType& server,
  * MagicMousePad::MouseSubscriber::Unsubscribe
  */
 void MagicMousePad::MouseSubscriber::Unsubscribe(void) {
+    ::closesocket(this->_socket);
+    if (this->_receiver.joinable()) {
+        this->_receiver.join();
+    }
 
 #if defined(_WIN32)
     ::WSACleanup();

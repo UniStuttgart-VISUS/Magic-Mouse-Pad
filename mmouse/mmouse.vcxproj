@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CommandLine.cpp" />
     <ClCompile Include="mmouse.cpp" />
     <ClCompile Include="MouseSubscriber.cpp" />
     <ClCompile Include="pch.cpp">
@@ -174,6 +175,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommandLine.h" />
     <ClInclude Include="MouseSubscriber.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

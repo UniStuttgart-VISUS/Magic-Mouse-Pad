@@ -8,6 +8,7 @@
 #include "targetver.h"
 #include <WinSock2.h>
 
+#include <atomic>
 #include <cassert>
 #include <cinttypes>
 #include <functional>

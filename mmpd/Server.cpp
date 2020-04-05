@@ -10,7 +10,7 @@
 /*
  * Server::Server
  */
-Server::Server(void) : _sequenceNumber(0), _socket(SOCKET_ERROR) {
+Server::Server(void) : _seqNumber(0), _socket(SOCKET_ERROR) {
     ::InitializeCriticalSection(&this->_lock);
 }
 
@@ -29,6 +29,8 @@ Server::~Server(void) {
  */
 void Server::Send(MagicMousePad::MousePositionMessage msg) {
     using namespace MagicMousePad;
+
+    msg.Header.SequenceNumber = ++this->_seqNumber;
     ToNetworkOrder(msg.Header);
 
     const auto x = msg.X;
@@ -105,10 +107,12 @@ void Server::OnMessage(MagicMousePad::Header *header,
 
         if (client != this->_clients.end()) {
             // We know this client already, just update its clipping area.
+            ::OutputDebugString(_T("Known client sent update.\r\n"));
             client->SetClippingArea(*m);
 
         } else {
             // Add a new client to the list of subscriptions.
+            ::OutputDebugString(_T("New client connected.\r\n"));
             this->_clients.emplace_back(&clientAddr, clientAddrLen);
             this->_clients.back().SetClippingArea(*m);
         }

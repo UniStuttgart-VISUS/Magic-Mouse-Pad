@@ -21,6 +21,7 @@ public:
 
     inline void Send(MagicMousePad::MouseDownMessage msg) {
         using namespace MagicMousePad;
+        msg.Header.SequenceNumber = ++this->_seqNumber;
         ToNetworkOrder(msg.Header);
         ToNetworkOrder(msg);
         this->Send(msg, OnSendCallback<decltype(msg)>());
@@ -30,6 +31,7 @@ public:
 
     inline void Send(MagicMousePad::MouseUpMessage msg) {
         using namespace MagicMousePad;
+        msg.Header.SequenceNumber = ++this->_seqNumber;
         ToNetworkOrder(msg.Header);
         ToNetworkOrder(msg);
         this->Send(msg, OnSendCallback<decltype(msg)>());
@@ -37,6 +39,7 @@ public:
 
     inline void Send(MagicMousePad::MouseVisibilityMessage msg) {
         using namespace MagicMousePad;
+        msg.Header.SequenceNumber = ++this->_seqNumber;
         ToNetworkOrder(msg.Header);
         ToNetworkOrder(msg);
         this->Send(msg, OnSendCallback<decltype(msg)>());
@@ -59,7 +62,7 @@ private:
     std::vector<Client> _clients;
     CRITICAL_SECTION _lock;
     std::thread _receiver;
-    decltype(MagicMousePad::Header::SequenceNumber) _sequenceNumber;
+    std::atomic<decltype(MagicMousePad::Header::SequenceNumber)> _seqNumber;
     SOCKET _socket;
 
 };
