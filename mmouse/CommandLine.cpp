@@ -5,3 +5,11 @@
 
 #include "pch.h"
 #include "CommandLine.h"
+
+
+/*
+ * CommandLine::CommandLine
+ */
+CommandLine::CommandLine(const TCHAR *cmdLine) : _port(0) {
+    ::ZeroMemory(&this->_server, sizeof(this->_server));
+}

@@ -17,7 +17,7 @@ public:
     /// <summary>
     /// Initialises a new instance.
     /// </summary>
-    CommandLine(const TCHAR *cmdLine) : _port(0) {}
+    CommandLine(const TCHAR *cmdLine);
 
     /// <summary>
     /// Gets the port the client should bind to.
@@ -30,7 +30,19 @@ public:
         return this->_port;
     }
 
+    /// <summary>
+    /// Gets the address of the server to connect to.
+    /// </summary>
+    /// <remarks>
+    /// No server was specified if the address is all-zero, most notably if the
+    /// protocol is neither IPv4 nor IPv6.
+    /// </remarks>
+    inline const sockaddr_storage& GetServer(void) const {
+        return this->_server;
+    }
+
 private:
 
     std::uint16_t _port;
+    sockaddr_storage _server;
 };

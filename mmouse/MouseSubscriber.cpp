@@ -14,11 +14,11 @@ MouseSubscriber::MouseSubscriber(const CommandLine& cmdLine) {
     sockaddr_storage server;
     auto hack = reinterpret_cast<sockaddr_in *>(&server);
     hack->sin_family = AF_INET;
-    hack->sin_addr.S_un.S_addr = (INADDR_LOOPBACK);
-    hack->sin_addr.S_un.S_un_b.s_b1 = 192;
-    hack->sin_addr.S_un.S_un_b.s_b2 = 168;
-    hack->sin_addr.S_un.S_un_b.s_b3 = 1;
-    hack->sin_addr.S_un.S_un_b.s_b4 = 184;
+    hack->sin_addr.S_un.S_addr = htonl(INADDR_LOOPBACK);
+    //hack->sin_addr.S_un.S_un_b.s_b1 = 192;
+    //hack->sin_addr.S_un.S_un_b.s_b2 = 168;
+    //hack->sin_addr.S_un.S_un_b.s_b3 = 1;
+    //hack->sin_addr.S_un.S_un_b.s_b4 = 184;
     hack->sin_port = htons(47596);
     this->Subscribe(server, /*cmdLine.GetPort()*/ 14263);
 }
