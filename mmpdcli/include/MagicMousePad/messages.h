@@ -19,11 +19,6 @@ namespace MagicMousePad {
     /// <summary>
     struct Header {
         /// <summary>
-        /// The fourcc code of the magic mouse pad.
-        /// </summary>
-        std::uint32_t Tag;
-
-        /// <summary>
         /// The overall length of the message (including this header) in bytes.
         /// </summary>
         std::uint16_t Length;
@@ -34,10 +29,14 @@ namespace MagicMousePad {
         std::uint16_t ID;
 
         /// <summary>
+        /// The sequence number of the message.
+        /// </summary>
+        std::uint32_t SequenceNumber;
+
+        /// <summary>
         /// Initialises a new instance.
         /// </summary>
-        inline Header(void) : Tag(static_cast<uint32_t>('MMPD')),
-            Length(0), ID(0) { }
+        inline Header(void) : Length(0), ID(0), SequenceNumber(0) { }
     };
 
     static_assert(sizeof(Header) == 8, "The header must comprise 8 non-padded "
@@ -49,9 +48,9 @@ namespace MagicMousePad {
     /// </summary>
     /// <param name="header">The header to be converted in-place.</param>
     inline void ToHostOrder(Header &header) {
-        header.Tag = ToHostOrder(header.Tag);
         header.Length = ToHostOrder(header.Length);
         header.ID = ToHostOrder(header.ID);
+        header.SequenceNumber = ToHostOrder(header.SequenceNumber);
     }
 
     /// <summary>
@@ -60,9 +59,9 @@ namespace MagicMousePad {
     /// </summary>
     /// <param name="header">The header to be converted in-place.</param>
     inline void ToNetworkOrder(Header &header) {
-        header.Tag = ToNetworkOrder(header.Tag);
         header.Length = ToNetworkOrder(header.Length);
         header.ID = ToNetworkOrder(header.ID);
+        header.SequenceNumber = ToNetworkOrder(header.SequenceNumber);
     }
 
 

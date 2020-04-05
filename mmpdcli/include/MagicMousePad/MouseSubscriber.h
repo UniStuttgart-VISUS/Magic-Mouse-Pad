@@ -153,11 +153,14 @@ namespace MagicMousePad {
         typedef int SocketType;
 #endif /* defined(_WIN32) */
 
+        bool CheckSequenceNumber(const Header &header);
+
         std::system_error GetSocketError(const std::string& msg);
 
         void Receive(void);
 
         std::thread _receiver;
+        decltype(Header::SequenceNumber) _sequenceNumber;
         SocketType _socket;
 
     };

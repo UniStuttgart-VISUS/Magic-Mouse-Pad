@@ -29,7 +29,7 @@ MagicMousePad::MouseSubscriber::~MouseSubscriber(void) {
  * MagicMousePad::MouseSubscriber::MouseSubscriber
  */
 MagicMousePad::MouseSubscriber::MouseSubscriber(void)
-    : _socket(SOCKET_ERROR) { }
+    : _sequenceNumber(0), _socket(SOCKET_ERROR) { }
 
 
 /*
@@ -142,6 +142,16 @@ void MagicMousePad::MouseSubscriber::Unsubscribe(void) {
 
 
 /*
+ * MagicMousePad::MouseSubscriber::CheckSequenceNumber
+ */
+bool MagicMousePad::MouseSubscriber::CheckSequenceNumber(const Header& header) {
+    auto retval = (header.SequenceNumber > this->_sequenceNumber);
+    this->_sequenceNumber = header.SequenceNumber;
+    return retval;
+}
+
+
+/*
  * MagicMousePad::MouseSubscriber::GetSocketError
  */
 std::system_error MagicMousePad::MouseSubscriber::GetSocketError(
@@ -201,28 +211,36 @@ void MagicMousePad::MouseSubscriber::Receive(void) {
                     auto m = reinterpret_cast<MousePositionMessage *>(
                         buffer.data());
                     ToHostOrder(*m);
-                    this->OnMouseMove(m->X, m->Y);
+                    if (this->CheckSequenceNumber(m->Header)) {
+                        this->OnMouseMove(m->X, m->Y);
+                    }
                 } break;
 
                 case MouseDownMessageID: {
                     auto m = reinterpret_cast<MouseDownMessage *>(
                         buffer.data());
                     ToHostOrder(*m);
-                    this->OnMouseDown(static_cast<MouseButton>(m->Button));
+                    if (this->CheckSequenceNumber(m->Header)) {
+                        this->OnMouseDown(static_cast<MouseButton>(m->Button));
+                    }
                 } break;
 
                 case MouseUpMessageID: {
                     auto m = reinterpret_cast<MouseUpMessage *>(
                         buffer.data());
                     ToHostOrder(*m);
-                    this->OnMouseUp(static_cast<MouseButton>(m->Button));
+                    if (this->CheckSequenceNumber(m->Header)) {
+                        this->OnMouseUp(static_cast<MouseButton>(m->Button));
+                    }
                 } break;
 
                 case MouseVisibilityMessageID: {
                     auto m = reinterpret_cast<MouseVisibilityMessage *>(
                         buffer.data());
                     ToHostOrder(*m);
-                    this->OnMouseVisibilityChanged(m->IsVisible != 0);
+                    if (this->CheckSequenceNumber(m->Header)) {
+                        this->OnMouseVisibilityChanged(m->IsVisible != 0);
+                    }
                 } break;
 
                 default:
