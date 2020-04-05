@@ -20,6 +20,7 @@
 #include <Windows.h>
 #include <windowsx.h>
 
+#include "MagicMousePad/byteorder.h"
 #include "MagicMousePad/MouseButton.h"
 #include "MagicMousePad/onexit.h"
 #include "MagicMousePad/ResourceHelper.h"

@@ -39,14 +39,10 @@ public:
     void OnMouseUp(const MagicMousePad::MouseButton button);
 
     inline void OnSize(void) {
-        this->_renderer.Resize(Renderer::GetSize(this->_hWnd));
+        this->_renderer.Resize(this->_hWnd);
     }
 
 private:
-
-    inline D2D1_SIZE_U GetSize(void) const {
-        return Renderer::GetSize(this->_hWnd);
-    }
 
     WPARAM _escapeKey;
     HWND _hWnd;

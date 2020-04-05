@@ -3,12 +3,13 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-#include <string>
 #include <system_error>
 
+#if defined(_WIN32)
 #include <Windows.h>
+#endif /* defined(_WIN32) */
 
-#include "ResourceHelper.h"
+#include "MagicMousePad/ResourceHelper.h"
 
 
 #if defined(_WIN32)

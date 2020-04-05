@@ -18,6 +18,9 @@
     <ClCompile Include="ResourceHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MouseSubscriber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\MagicMousePad\ResourceHelper.h">
@@ -27,6 +30,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\MagicMousePad\MouseButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MagicMousePad\byteorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MagicMousePad\MouseSubscriber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MagicMousePad\messages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

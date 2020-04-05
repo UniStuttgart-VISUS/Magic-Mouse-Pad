@@ -5,13 +5,15 @@
 
 #pragma once
 
+#include <cinttypes>
+
 
 namespace MagicMousePad {
 
     /// <summary>
     /// Defines possible mouse buttons.
     /// </summary>
-    enum class MouseButton : std::uint8_t {
+    enum class MouseButton : std::uint16_t {
 
         /// <summary>
         /// Represents the left mouse button.

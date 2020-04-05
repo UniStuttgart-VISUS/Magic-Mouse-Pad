@@ -21,9 +21,9 @@ public:
 
     void Draw(void);
 
-    inline void Resize(const D2D1_SIZE_U &size) {
+    inline void Resize(HWND hWnd) {
         assert(this->_rt != nullptr);
-        this->_rt->Resize(size);
+        this->_rt->Resize(GetSize(hWnd));
     }
 
     inline void SetBackgroundColour(const D2D1::ColorF::Enum colour) {

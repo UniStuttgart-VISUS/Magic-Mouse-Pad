@@ -89,8 +89,8 @@ void State::OnMouseDown(const MagicMousePad::MouseButton button) {
 void State::OnMouseMove(const INT x, const INT y) {
     if (this->_isActive) {
         auto isWrap = false;
-        POINT pos { x ,y };
-        auto size = this->GetSize();
+        POINT pos { x, y };
+        auto size = Renderer::GetSize(this->_hWnd);
 
         if (pos.x < 0) {
             ::OutputDebugString(_T("Wrap left.\r\n"));

@@ -3,13 +3,15 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-#include <Windows.h>
+#include "pch.h"
+
+#include "MouseSubscriber.h"
 
 
 /// <summary>
 /// Entry point of the application.
 /// </summary>
-int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-        LPWSTR cmdLine, int cmdShow) {
+int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+        LPTSTR cmdLine, int cmdShow) {
     return 0;
 }
