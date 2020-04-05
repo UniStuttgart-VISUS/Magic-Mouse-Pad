@@ -141,6 +141,23 @@ namespace MagicMousePad {
             SubscriptionMessage subscription);
 
         /// <summary>
+        /// Starts a subscription using a promiscuous port.
+        /// </summary>
+        /// <param name="server">The address of the magic mouse pad to connect
+        /// to. The address family of this end point address must be either
+        /// IPv4 and IPv6. It also determines the address family used for the
+        /// local socket opened on port <paramref name="port" />.</param>
+        /// <param name="subscription">A description of the subscription, which
+        /// allows the subscriber to request mouse coordinates in its local
+        /// coordinate system.</param>
+        /// <exception cref="std::logic_error">If the the subscriber is already
+        /// running.</exception>
+        inline void Subscribe(const EndPointType &server,
+                const SubscriptionMessage& subscription) {
+            this->Subscribe(server, 0, subscription);
+        }
+
+        /// <summary>
         /// Cancels any ongoing subscription of mouse messages.
         /// </summary>
         void Unsubscribe(void);
