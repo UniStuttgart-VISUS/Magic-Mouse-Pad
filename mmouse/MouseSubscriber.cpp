@@ -14,3 +14,11 @@ void MouseSubscriber::OnMouseMove(const std::int32_t x,
         const std::int32_t y) {
     ::SetCursorPos(x, y);
 }
+
+
+/*
+ * MouseSubscriber::OnMouseVisibilityChanged
+ */
+void MouseSubscriber::OnMouseVisibilityChanged(const bool isVisible) {
+    ::ShowCursor(isVisible ? TRUE : FALSE);
+}

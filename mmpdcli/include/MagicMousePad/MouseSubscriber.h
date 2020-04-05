@@ -95,6 +95,16 @@ namespace MagicMousePad {
         virtual void OnMouseUp(const MagicMousePad::MouseButton button);
 
         /// <summary>
+        /// This method is invoked if the subscriber receives a message that
+        /// indicates that the visibility of the mouse cursor should be changed.
+        /// </summary>
+        /// <remarks>
+        /// This method can be called from an arbitrary thread context.
+        /// </remarks>
+        /// <param name="button"></param>
+        virtual void OnMouseVisibilityChanged(const bool isVisible);
+
+        /// <summary>
         /// Starts an unconstrained subscription for mouse messages on the
         /// specified port.
         /// </summary>

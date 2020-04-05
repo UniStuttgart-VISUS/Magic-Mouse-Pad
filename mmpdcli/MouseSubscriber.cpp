@@ -53,6 +53,13 @@ void MagicMousePad::MouseSubscriber::OnMouseUp(
 
 
 /*
+ * MagicMousePad::MouseSubscriber::OnMouseVisibilityChanged
+ */
+void MagicMousePad::MouseSubscriber::OnMouseVisibilityChanged(
+    const bool isVisible) { }
+
+
+/*
  * MagicMousePad::MouseSubscriber::Subscribe
  */
 void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
@@ -93,6 +100,8 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
  */
 void MagicMousePad::MouseSubscriber::Subscribe(const EndPointType& server,
         const PortType port, SubscriptionMessage subscription) {
+    assert(subscription.Header.ID == SubscriptionMessageID);
+    assert(subscription.Header.Length == sizeof(subscription));
     auto a = reinterpret_cast<const sockaddr *>(&server);
     auto l = 0;
 
@@ -207,6 +216,13 @@ void MagicMousePad::MouseSubscriber::Receive(void) {
                         buffer.data());
                     ToHostOrder(*m);
                     this->OnMouseUp(static_cast<MouseButton>(m->Button));
+                } break;
+
+                case MouseVisibilityMessageID: {
+                    auto m = reinterpret_cast<MouseVisibilityMessage *>(
+                        buffer.data());
+                    ToHostOrder(*m);
+                    this->OnMouseVisibilityChanged(m->IsVisible != 0);
                 } break;
 
                 default:

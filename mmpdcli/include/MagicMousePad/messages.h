@@ -47,6 +47,7 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="header" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <param name="header">The header to be converted in-place.</param>
     inline void ToHostOrder(Header &header) {
         header.Tag = ToHostOrder(header.Tag);
         header.Length = ToHostOrder(header.Length);
@@ -57,6 +58,7 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="header" /> from host byte order
     /// to network byte order.
     /// </summary>
+    /// <param name="header">The header to be converted in-place.</param>
     inline void ToNetworkOrder(Header &header) {
         header.Tag = ToNetworkOrder(header.Tag);
         header.Length = ToNetworkOrder(header.Length);
@@ -146,6 +148,7 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(SubscriptionMessage &msg) {
         ToHostOrder(msg.Header);
         msg.Left = ToHostOrder(msg.Left);
@@ -157,7 +160,8 @@ namespace MagicMousePad {
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
-    /// </summarySubscriptionMessage
+    /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(SubscriptionMessage &msg) {
         ToNetworkOrder(msg.Header);
         msg.Left = ToNetworkOrder(msg.Left);
@@ -206,6 +210,7 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MousePositionMessage &msg) {
         ToHostOrder(msg.Header);
         msg.X = ToHostOrder(msg.X);
@@ -215,7 +220,8 @@ namespace MagicMousePad {
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
-    /// </summarySubscriptionMessage
+    /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MousePositionMessage &msg) {
         ToNetworkOrder(msg.Header);
         msg.X = ToNetworkOrder(msg.X);
@@ -257,6 +263,7 @@ namespace MagicMousePad {
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
     /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToHostOrder(MouseDownMessage &msg) {
         ToHostOrder(msg.Header);
         msg.Button = ToHostOrder(std::underlying_type<MouseButton>::type(
@@ -266,7 +273,8 @@ namespace MagicMousePad {
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from host byte order
     /// to network byte order.
-    /// </summarySubscriptionMessage
+    /// </summary>
+    /// <param name="msg">The message to be converted in-place.</param>
     inline void ToNetworkOrder(MouseDownMessage &msg) {
         ToNetworkOrder(msg.Header);
         msg.Button = ToNetworkOrder(std::underlying_type<MouseButton>::type(
@@ -322,6 +330,55 @@ namespace MagicMousePad {
         ToNetworkOrder(msg.Header);
         msg.Button = ToNetworkOrder(std::underlying_type<MouseButton>::type(
             msg.Button));
+    }
+
+
+    /// <summary>
+    /// The ID of a <see cref="MouseVisibilityMessage" />.
+    /// </summary>
+    static const std::uint32_t MouseVisibilityMessageID = 0x00000013;
+
+    /// <summary>
+    /// This message is sent from the magic mouse pad to the subscriber to
+    /// inform about the cursor being hidden or shown.
+    /// </summary>
+    struct MouseVisibilityMessage {
+
+        /// <summary>
+        /// The message header.
+        /// </summary>
+        Header Header;
+
+        /// <summary>
+        /// Indicates whether the mouse is visible or hidden (0).
+        /// </summary>
+        std::uint16_t IsVisible;
+
+        /// <summary>
+        /// Initialises a new instance.
+        /// </summary>
+        inline MouseVisibilityMessage(void) : IsVisible(1) {
+            this->Header.ID = MouseDownMessageID;
+            this->Header.Length = sizeof(*this);
+        }
+    };
+
+    /// <summary>
+    /// Convert the data in <paramref name="msg" /> from network byte order
+    /// to host byte order.
+    /// </summary>
+    inline void ToHostOrder(MouseVisibilityMessage &msg) {
+        ToHostOrder(msg.Header);
+        msg.IsVisible = ToHostOrder(msg.IsVisible);
+    }
+
+    /// <summary>
+    /// Convert the data in <paramref name="msg" /> from host byte order
+    /// to network byte order.
+    /// </summarySubscriptionMessage
+    inline void ToNetworkOrder(MouseVisibilityMessage &msg) {
+        ToNetworkOrder(msg.Header);
+        msg.IsVisible = ToNetworkOrder(msg.IsVisible);
     }
 
 #pragma pack(pop)
