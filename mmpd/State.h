@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "CommandLine.h"
 #include "Renderer.h"
 #include "Server.h"
 
@@ -21,7 +22,7 @@ public:
 
     static State *Retrieve(HWND hWnd);
 
-    State(HWND hWnd);
+    State(HWND hWnd, const CommandLine& cmdLine);
 
     ~State(void);
 

@@ -38,9 +38,10 @@ State *State::Retrieve(HWND hWnd) {
 /*
  * State::State
  */
-State::State(HWND hWnd) : _escapeKey(VK_ESCAPE), _hWnd(hWnd), _isActive(false),
-        _renderer(hWnd) {
+State::State(HWND hWnd, const CommandLine &cmdLine) : _escapeKey(VK_ESCAPE),
+        _hWnd(hWnd), _isActive(false), _renderer(hWnd) {
     this->_renderer.SetBackgroundColour(D2D1::ColorF::DarkGray);
+    this->_server.Start(cmdLine.GetPort(), cmdLine.GetAddressFamily());
     State::Attach(*this, hWnd);
 }
 

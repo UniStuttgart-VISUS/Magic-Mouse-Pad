@@ -86,6 +86,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     try {
+        {
+            WSADATA wsaData;
+            auto status = ::WSAStartup(MAKEWORD(2, 2), &wsaData);
+            if (status != NO_ERROR) {
+                throw std::system_error(status, std::system_category(),
+                    "Failed to start Winsock 2.2");
+            }
+        }
+        auto guardWinsock = MagicMousePad::OnExit([]() { ::WSACleanup(); });
+
         ::RegisterWindowClass(hInstance, ::WndProc);
         auto guardWindowClass = MagicMousePad::OnExit([hInstance]() {
             ::UnregisterWindowClass(hInstance);
@@ -96,7 +106,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             ::DestroyWindow(hWnd);
             });
 
-        State state(hWnd);
+        State state(hWnd, CommandLine(cmdLine));
 
         ::ShowWindow(hWnd, cmdShow);
 
