@@ -143,6 +143,9 @@ namespace MagicMousePad {
         }
     };
 
+    static_assert(sizeof(SubscriptionMessage) == sizeof(Header) + 16, "Size of "
+        "SubscriptionMessage is unexpected.");
+
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
@@ -205,6 +208,9 @@ namespace MagicMousePad {
         }
     };
 
+    static_assert(sizeof(MousePositionMessage) == sizeof(Header) + 8,
+        "Size of MousePositionMessage is unexpected.");
+
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
@@ -257,6 +263,9 @@ namespace MagicMousePad {
             this->Header.Length = sizeof(*this);
         }
     };
+
+    static_assert(sizeof(MouseDownMessage) == sizeof(Header) + 2,
+        "Size of MouseDownMessage is unexpected.");
 
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from network byte order
@@ -311,6 +320,9 @@ namespace MagicMousePad {
         }
     };
 
+    static_assert(sizeof(MouseUpMessage) == sizeof(Header) + 2,
+        "Size of MouseUpMessage is unexpected.");
+
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from network byte order
     /// to host byte order.
@@ -361,6 +373,9 @@ namespace MagicMousePad {
             this->Header.Length = sizeof(*this);
         }
     };
+
+    static_assert(sizeof(MouseVisibilityMessage) == sizeof(Header) + 2,
+        "Size of MouseVisibilityMessage is unexpected.");
 
     /// <summary>
     /// Convert the data in <paramref name="msg" /> from network byte order
