@@ -15,6 +15,7 @@ template<class T> void Server::Send(T& msg, const OnSendCallback<T>& onSend) {
             onSend(*c);
         }
 
+        //::OutputDebugString(_T("Sending message ...\r\n"));
         auto cnt = ::sendto(this->_socket, reinterpret_cast<const char *>(&msg),
             sizeof(T), 0, c->GetAddress(), c->GetAddressLength());
         if (cnt <= 0) {

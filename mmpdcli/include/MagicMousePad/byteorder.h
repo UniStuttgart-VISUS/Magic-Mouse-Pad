@@ -38,7 +38,8 @@ namespace MagicMousePad {
     /// </summary>
     inline std::int16_t ToHostOrder(const std::int16_t n) {
         auto m = *reinterpret_cast<const std::uint16_t *>(&n);
-        return *reinterpret_cast<std::int16_t  *>(ToHostOrder(m));
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int16_t *>(&m);
     }
 
     /// <summary>
@@ -53,7 +54,8 @@ namespace MagicMousePad {
     /// </summary>
     inline std::int32_t ToHostOrder(const std::int32_t n) {
         auto m = *reinterpret_cast<const std::uint32_t *>(&n);
-        return *reinterpret_cast<std::int32_t *>(ToHostOrder(m));
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int32_t *>(&m);
     }
 
     /// <summary>
@@ -72,7 +74,8 @@ namespace MagicMousePad {
     /// </summary>
     inline std::int64_t ToHostOrder(const std::int64_t n) {
         auto m = *reinterpret_cast<const std::uint64_t *>(&n);
-        return *reinterpret_cast<std::int64_t *>(ToHostOrder(m));
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int64_t *>(&m);
     }
 
     /// <summary>
@@ -101,7 +104,8 @@ namespace MagicMousePad {
     /// </summary>
     inline std::int16_t ToNetworkOrder(const std::int16_t n) {
         auto m = *reinterpret_cast<const std::uint16_t *>(&n);
-        return *reinterpret_cast<std::int16_t *>(ToNetworkOrder(m));
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int16_t *>(&m);
     }
 
     /// <summary>
@@ -115,8 +119,9 @@ namespace MagicMousePad {
     /// Convert <paramref name="n" /> from host byte order to network byte order.
     /// </summary>
     inline std::int32_t ToNetworkOrder(const std::int32_t n) {
-        auto m = *reinterpret_cast<const std::uint16_t *>(&n);
-        return *reinterpret_cast<std::int32_t *>(ToNetworkOrder(m));
+        auto m = *reinterpret_cast<const std::uint32_t *>(&n);
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int32_t *>(&m);
     }
 
     /// <summary>
@@ -135,6 +140,7 @@ namespace MagicMousePad {
     /// </summary>
     inline std::int64_t ToNetworkOrder(const std::int64_t n) {
         auto m = *reinterpret_cast<const std::uint64_t *>(&n);
-        return *reinterpret_cast<std::int64_t *>(ToNetworkOrder(m));
+        m = ToHostOrder(m);
+        return *reinterpret_cast<std::int64_t *>(&m);
     }
 }

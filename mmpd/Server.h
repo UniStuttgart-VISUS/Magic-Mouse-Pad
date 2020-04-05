@@ -19,6 +19,10 @@ public:
 
     ~Server(void);
 
+    void AddClient(const sockaddr_storage &address);
+
+    void AddClient(const sockaddr& address, const int addressLen);
+
     inline void Send(MagicMousePad::MouseDownMessage msg) {
         using namespace MagicMousePad;
         msg.Header.SequenceNumber = ++this->_seqNumber;

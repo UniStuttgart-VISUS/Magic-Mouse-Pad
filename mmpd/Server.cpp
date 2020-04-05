@@ -25,6 +25,47 @@ Server::~Server(void) {
 
 
 /*
+ * Server::AddClient
+ */
+void Server::AddClient(const sockaddr_storage& address) {
+    switch (address.ss_family) {
+        case AF_INET:
+            this->AddClient(*reinterpret_cast<const sockaddr *>(&address),
+                sizeof(sockaddr_in));
+            break;
+
+        case AF_INET6:
+            this->AddClient(*reinterpret_cast<const sockaddr *>(&address),
+                sizeof(sockaddr_in));
+            break;
+
+        default:
+            throw std::invalid_argument("The client address must either be an "
+                "IPv4 or IPv6 address.");
+    }
+}
+
+
+/*
+ * Server::AddClient
+ */
+void Server::AddClient(const sockaddr& address, const int addressLen) {
+    ::EnterCriticalSection(&this->_lock);
+
+    auto client = std::find_if(this->_clients.begin(), this->_clients.end(),
+        [&address, addressLen](const Client &c) {
+            return c.IsAddress(address, addressLen);
+        });
+
+    if (client == this->_clients.end()) {
+        this->_clients.emplace_back(&address, addressLen);
+    }
+
+    ::LeaveCriticalSection(&this->_lock);
+}
+
+
+/*
  * Server::Send
  */
 void Server::Send(MagicMousePad::MousePositionMessage msg) {
