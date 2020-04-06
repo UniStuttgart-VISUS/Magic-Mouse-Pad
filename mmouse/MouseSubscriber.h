@@ -18,6 +18,8 @@ public:
 
     MouseSubscriber(const CommandLine& cmdLine);
 
+    void Announce(void);
+
     inline void Stop(void) {
         this->Unsubscribe();
     }
@@ -29,4 +31,8 @@ protected:
 
     /// <inheritdoc />
     void OnMouseVisibilityChanged(const bool isVisible) override;
+
+private:
+
+    CommandLine _cmdLine;
 };

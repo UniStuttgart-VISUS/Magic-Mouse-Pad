@@ -138,7 +138,7 @@ namespace MagicMousePad {
         /// <exception cref="std::logic_error">If the the subscriber is already
         /// running.</exception>
         void Subscribe(const EndPointType& server, const PortType port,
-            SubscriptionMessage subscription);
+            const SubscriptionMessage& subscription);
 
         /// <summary>
         /// Starts a subscription using an ephemeral port.
@@ -186,6 +186,16 @@ namespace MagicMousePad {
         /// </summary>
         void Unsubscribe(void);
 
+        /// <summary>
+        /// Resends the subscription message to the given server.
+        /// </summary>
+        /// <param name="subscription">A description of the subscription, which
+        /// allows the subscriber to request mouse coordinates in its local
+        /// coordinate system.</param>
+        /// <exception cref="std::system_error">If the communication failed
+        /// because no subscription was made before.</exception>
+        void UpdateSubscription(SubscriptionMessage subscription);
+
     private:
 
 #if defined(_WIN32)
@@ -193,6 +203,9 @@ namespace MagicMousePad {
 #else /* defined(_WIN32) */
         typedef int SocketType;
 #endif /* defined(_WIN32) */
+
+        static std::pair<AddressFamily, int> CheckAddress(
+            const EndPointType& address);
 
         bool CheckSequenceNumber(const Header &header);
 
@@ -202,6 +215,7 @@ namespace MagicMousePad {
 
         std::thread _receiver;
         decltype(Header::SequenceNumber) _sequenceNumber;
+        EndPointType _server;
         SocketType _socket;
 
     };

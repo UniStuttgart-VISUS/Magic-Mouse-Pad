@@ -22,6 +22,17 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam,
     switch (msg) {
         case WM_COMMAND:
             switch (LOWORD(wParam)) {
+                case ID_MENU_SUBSCRIBE:
+                    try {
+                        auto data = ::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+                        auto subscriber = reinterpret_cast<MouseSubscriber *>(data);
+                        subscriber->Announce();
+                    } catch (std::exception &ex) {
+                        ::MessageBoxA(NULL, ex.what(), nullptr,
+                            MB_OK | MB_ICONERROR);
+                    }
+                    break;
+
                 case ID_MENU_EXIT:
                     ::PostQuitMessage(0);
                     break;
@@ -61,16 +72,19 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
 
     try {
+        // Register the window class.
         ::RegisterWindowClass(hInstance, ::WndProc);
         auto guardWindowClass = MagicMousePad::OnExit([hInstance]() {
             ::UnregisterWindowClass(hInstance);
             });
 
+        // Create the hidden window processing the events.
         auto hWnd = ::CreateDummyWindow(hInstance);
         auto guardWindow = ::MagicMousePad::OnExit([hWnd]() {
             ::DestroyWindow(hWnd);
             });
 
+        // Add the systray icon.
         NOTIFYICONDATA nid;
         ::ZeroMemory(&nid, sizeof(nid));
         nid.cbSize = sizeof(nid);
@@ -90,16 +104,31 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             ::Shell_NotifyIcon(NIM_DELETE, &nid);
             });
 
+        // Create the subscriber.
         CommandLine c(cmdLine);
         MouseSubscriber subscriber(c);
+        auto guardSubscriber = ::MagicMousePad::OnExit(
+            [&subscriber]() { subscriber.Stop(); });
 
+        // Attach the subscriber to the dummy window.
+        {
+            auto data = reinterpret_cast<LONG_PTR>(std::addressof(subscriber));
+
+            if (::SetWindowLongPtr(hWnd, GWLP_USERDATA, data) == 0) {
+                auto error = ::GetLastError();
+                if (error != NO_ERROR) {
+                    throw std::system_error(error, std::system_category(),
+                        "Failed to attach application object to window handle");
+                }
+            }
+        }
+
+        // Enter the message loop.
         MSG msg;
         while (::GetMessage(&msg, nullptr, 0, 0)) {
             ::TranslateMessage(&msg);
             ::DispatchMessage(&msg);
         }
-
-        subscriber.Stop();
 
         return static_cast<int>(msg.wParam);
     } catch (std::exception &ex) {

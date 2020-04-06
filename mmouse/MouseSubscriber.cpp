@@ -10,17 +10,19 @@
 /*
  * MouseSubscriber::MouseSubscriber
  */
-MouseSubscriber::MouseSubscriber(const CommandLine& cmdLine) {
-    sockaddr_storage server;
-    auto hack = reinterpret_cast<sockaddr_in *>(&server);
-    hack->sin_family = AF_INET;
-    hack->sin_addr.S_un.S_addr = htonl(INADDR_LOOPBACK);
-    //hack->sin_addr.S_un.S_un_b.s_b1 = 192;
-    //hack->sin_addr.S_un.S_un_b.s_b2 = 168;
-    //hack->sin_addr.S_un.S_un_b.s_b3 = 1;
-    //hack->sin_addr.S_un.S_un_b.s_b4 = 184;
-    hack->sin_port = htons(47596);
-    this->Subscribe(server, cmdLine.GetPort());
+MouseSubscriber::MouseSubscriber(const CommandLine& cmdLine)
+        : _cmdLine(cmdLine) {
+    ::OutputDebugString(_T("Subscribing to server ...\r\n"));
+    this->Subscribe(this->_cmdLine.GetServer(), this->_cmdLine.GetPort());
+}
+
+
+/*
+ * MouseSubscriber::Announce
+ */
+void MouseSubscriber::Announce(void) {
+    ::OutputDebugString(_T("Sending subscription update ...\r\n"));
+    this->UpdateSubscription(MagicMousePad::SubscriptionMessage());
 }
 
 
@@ -29,6 +31,7 @@ MouseSubscriber::MouseSubscriber(const CommandLine& cmdLine) {
  */
 void MouseSubscriber::OnMouseMove(const std::int32_t x,
         const std::int32_t y) {
+    ::OutputDebugString(_T("Received mouse position.\r\n"));
     ::SetCursorPos(x, y);
 }
 

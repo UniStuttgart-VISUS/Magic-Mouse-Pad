@@ -34,7 +34,9 @@ MagicMousePad::MouseSubscriber::~MouseSubscriber(void) {
  * MagicMousePad::MouseSubscriber::MouseSubscriber
  */
 MagicMousePad::MouseSubscriber::MouseSubscriber(void)
-    : _sequenceNumber(0), _socket(INVALID_SOCKET) { }
+        : _sequenceNumber(0), _socket(INVALID_SOCKET) {
+    ::ZeroMemory(&this->_server, sizeof(this->_server));
+}
 
 
 /*
@@ -114,35 +116,13 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
  * MagicMousePad::MouseSubscriber::Subscribe
  */
 void MagicMousePad::MouseSubscriber::Subscribe(const EndPointType& server,
-        const PortType port, SubscriptionMessage subscription) {
+        const PortType port, const SubscriptionMessage& subscription) {
     assert(subscription.Header.ID == SubscriptionMessageID);
     assert(subscription.Header.Length == sizeof(subscription));
-    auto a = reinterpret_cast<const sockaddr *>(&server);
-    auto l = 0;
-
-    switch (a->sa_family) {
-        case AF_INET:
-            this->Subscribe(port, AddressFamily::InterNetwork);
-            l = sizeof(sockaddr_in);
-            break;
-
-        case AF_INET6:
-            this->Subscribe(port, AddressFamily::InterNetwork6);
-            l = sizeof(sockaddr_in6);
-            break;
-
-        default:
-            throw std::invalid_argument("The server end point address must "
-                "either be an IPv4 or IPv6 address");
-    }
-
-    ToNetworkOrder(subscription.Header);
-    ToNetworkOrder(subscription);
-
-    if (::sendto(this->_socket, reinterpret_cast<const char *>(&subscription),
-            sizeof(subscription), 0, a, l) == SOCKET_ERROR) {
-        throw this->GetSocketError("Failed to send subscription message");
-    }
+    auto address = CheckAddress(server);
+    this->Subscribe(port, address.first);
+    this->_server = server;
+    this->UpdateSubscription(subscription);
 }
 
 
@@ -158,6 +138,45 @@ void MagicMousePad::MouseSubscriber::Unsubscribe(void) {
 #if defined(_WIN32)
     ::WSACleanup();
 #endif /* defined(_WIN32) */
+}
+
+
+/*
+ * MagicMousePad::MouseSubscriber::UpdateSubscription
+ */
+void MagicMousePad::MouseSubscriber::UpdateSubscription(
+        SubscriptionMessage subscription) {
+    auto address = CheckAddress(this->_server);
+    auto a = reinterpret_cast<sockaddr *>(&this->_server);
+
+    ToNetworkOrder(subscription.Header);
+    ToNetworkOrder(subscription);
+
+    if (::sendto(this->_socket, reinterpret_cast<const char *>(&subscription),
+            sizeof(subscription), 0, a, address.second) == SOCKET_ERROR) {
+        throw this->GetSocketError("Failed to send subscription message");
+    }
+}
+
+
+/*
+ * MagicMousePad::MouseSubscriber::CheckAddress
+ */
+std::pair< MagicMousePad::MouseSubscriber::AddressFamily, int>
+MagicMousePad::MouseSubscriber::CheckAddress(const EndPointType& address) {
+    switch (address.ss_family) {
+        case AF_INET:
+            return std::make_pair(AddressFamily::InterNetwork,
+                static_cast<int>(sizeof(sockaddr_in)));
+
+        case AF_INET6:
+            return std::make_pair(AddressFamily::InterNetwork6,
+                static_cast<int>(sizeof(sockaddr_in6)));
+
+        default:
+            throw std::invalid_argument("The server end point address must "
+                "either be an IPv4 or IPv6 address");
+    }
 }
 
 

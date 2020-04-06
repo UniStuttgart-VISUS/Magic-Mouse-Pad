@@ -64,6 +64,7 @@ IDR_MENU MENU
 BEGIN
     POPUP ""
     BEGIN
+        MENUITEM "Beim &Server melden",         ID_MENU_SUBSCRIBE
         MENUITEM "Be&enden",                    ID_MENU_EXIT
     END
 END
