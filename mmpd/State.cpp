@@ -44,18 +44,18 @@ State::State(HWND hWnd, const CommandLine &cmdLine) : _escapeKey(VK_ESCAPE),
     this->_server.Start(cmdLine.GetPort(), cmdLine.GetAddressFamily());
     State::Attach(*this, hWnd);
 
-    {
-        sockaddr_storage server;
-        auto hack = reinterpret_cast<sockaddr_in *>(&server);
-        hack->sin_family = AF_INET;
-        hack->sin_addr.S_un.S_addr = htonl(INADDR_LOOPBACK);
-        hack->sin_addr.S_un.S_un_b.s_b1 = 192;
-        hack->sin_addr.S_un.S_un_b.s_b2 = 168;
-        hack->sin_addr.S_un.S_un_b.s_b3 = 1;
-        hack->sin_addr.S_un.S_un_b.s_b4 = 184;
-        hack->sin_port = htons(14263);
-        this->_server.AddClient(server);
-    }
+    //{
+    //    sockaddr_storage server;
+    //    auto hack = reinterpret_cast<sockaddr_in *>(&server);
+    //    hack->sin_family = AF_INET;
+    //    hack->sin_addr.S_un.S_addr = htonl(INADDR_LOOPBACK);
+    //    hack->sin_addr.S_un.S_un_b.s_b1 = 192;
+    //    hack->sin_addr.S_un.S_un_b.s_b2 = 168;
+    //    hack->sin_addr.S_un.S_un_b.s_b3 = 1;
+    //    hack->sin_addr.S_un.S_un_b.s_b4 = 184;
+    //    hack->sin_port = htons(14263);
+    //    this->_server.AddClient(server);
+    //}
 }
 
 

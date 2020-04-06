@@ -9,9 +9,9 @@
 #include "State.h"
 
 
-/*
- * ::WndProc
- */
+/// <summary>
+/// Handles events for the mouse pad window.
+/// </summary>
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam,
         LPARAM lParam) {
 

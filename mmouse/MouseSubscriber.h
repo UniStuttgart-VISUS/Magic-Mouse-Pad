@@ -18,6 +18,10 @@ public:
 
     MouseSubscriber(const CommandLine& cmdLine);
 
+    inline void Stop(void) {
+        this->Unsubscribe();
+    }
+
 protected:
 
     /// <inheritdoc />

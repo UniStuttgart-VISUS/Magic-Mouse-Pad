@@ -7,8 +7,18 @@
 
 #include <WinSock2.h>
 
+#include <cassert>
+#include <stdexcept>
+#include <string>
+#include <system_error>
+
+#include <shellapi.h>
 #include <tchar.h>
 #include <Windows.h>
 #include <ws2tcpip.h>
 
+#include "MagicMousePad/cmdline.h"
 #include "MagicMousePad/MouseSubscriber.h"
+#include "MagicMousePad/onexit.h"
+#include "MagicMousePad/ResourceHelper.h"
+#include "MagicMousePad/tokenise.h"
