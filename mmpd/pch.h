@@ -26,9 +26,11 @@
 #include <WS2tcpip.h>
 
 #include "MagicMousePad/byteorder.h"
+#include "MagicMousePad/cmdline.h"
 #include "MagicMousePad/messages.h"
 #include "MagicMousePad/MouseButton.h"
 #include "MagicMousePad/onexit.h"
 #include "MagicMousePad/receive.h"
 #include "MagicMousePad/ResourceHelper.h"
 #include "MagicMousePad/serveraddress.h"
+#include "MagicMousePad/tokenise.h"

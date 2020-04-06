@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\MagicMousePad\byteorder.h" />
+    <ClInclude Include="include\MagicMousePad\cmdline.h" />
     <ClInclude Include="include\MagicMousePad\messages.h" />
     <ClInclude Include="include\MagicMousePad\MouseButton.h" />
     <ClInclude Include="include\MagicMousePad\MouseSubscriber.h" />
@@ -33,9 +34,11 @@
     <ClInclude Include="include\MagicMousePad\receive.h" />
     <ClInclude Include="include\MagicMousePad\ResourceHelper.h" />
     <ClInclude Include="include\MagicMousePad\serveraddress.h" />
+    <ClInclude Include="include\MagicMousePad\tokenise.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\MagicMousePad\onexit.inl" />
+    <None Include="include\MagicMousePad\tokenise.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -5,6 +5,7 @@
 
 #include "MagicMousePad/serveraddress.h"
 
+#include <cassert>
 #include <stdexcept>
 
 #if defined(_WIN32)
@@ -28,7 +29,8 @@ std::pair<sockaddr *, int> MagicMousePad::InitialiseServerAddress(
                 a->sin_addr.S_un.S_addr = ToNetworkOrder(addr);
                 a->sin_port = ToNetworkOrder(port);
                 auto b = reinterpret_cast<sockaddr *>(a);
-                return std::make_pair(b, sizeof(*a));
+                assert(sizeof(*a) < (std::numeric_limits<int>::max)());
+                return std::make_pair(b, static_cast<int>(sizeof(*a)));
             }
 
             case AF_INET6: {
@@ -37,7 +39,8 @@ std::pair<sockaddr *, int> MagicMousePad::InitialiseServerAddress(
                 a->sin6_addr = ::in6addr_any;
                 a->sin6_port = ToNetworkOrder(port);
                 auto b = reinterpret_cast<sockaddr *>(a);
-                return std::make_pair(b, sizeof(*a));
+                assert(sizeof(*a) < (std::numeric_limits<int>::max)());
+                return std::make_pair(b, static_cast<int>(sizeof(*a)));
             }
 
         default:
