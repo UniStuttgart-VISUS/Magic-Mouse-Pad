@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="endpoint.cpp" />
     <ClCompile Include="MouseSubscriber.cpp" />
     <ClCompile Include="receive.cpp" />
     <ClCompile Include="ResourceHelper.cpp" />
     <ClCompile Include="serveraddress.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\MagicMousePad\endpoint.h" />
     <ClInclude Include="include\MagicMousePad\byteorder.h" />
     <ClInclude Include="include\MagicMousePad\cmdline.h" />
     <ClInclude Include="include\MagicMousePad\messages.h" />

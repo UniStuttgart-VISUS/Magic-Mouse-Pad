@@ -27,6 +27,7 @@
 
 #include "MagicMousePad/byteorder.h"
 #include "MagicMousePad/cmdline.h"
+#include "MagicMousePad/endpoint.h"
 #include "MagicMousePad/messages.h"
 #include "MagicMousePad/MouseButton.h"
 #include "MagicMousePad/onexit.h"

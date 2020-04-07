@@ -18,6 +18,7 @@
 #include <ws2tcpip.h>
 
 #include "MagicMousePad/cmdline.h"
+#include "MagicMousePad/endpoint.h"
 #include "MagicMousePad/MouseSubscriber.h"
 #include "MagicMousePad/onexit.h"
 #include "MagicMousePad/ResourceHelper.h"

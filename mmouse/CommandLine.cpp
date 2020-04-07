@@ -24,13 +24,11 @@ CommandLine::CommandLine(const TCHAR *cmdLine) : _port(0) {
         }
     }
 
-    auto hack = reinterpret_cast<sockaddr_in *>(&_server);
-    hack->sin_family = AF_INET;
-    hack->sin_addr.S_un.S_addr = htonl(INADDR_LOOPBACK);
-    //hack->sin_addr.S_un.S_un_b.s_b1 = 192;
-    //hack->sin_addr.S_un.S_un_b.s_b2 = 168;
-    //hack->sin_addr.S_un.S_un_b.s_b3 = 1;
-    //hack->sin_addr.S_un.S_un_b.s_b4 = 184;
-    hack->sin_port = htons(47596);
-    
+    {
+        auto it = MagicMousePad::FindArgument(_T("/server"), args.begin(),
+            args.end());
+        if (it != args.end()) {
+            this->_server = MagicMousePad::ParseEndPoint(it->c_str());
+        }
+    }
 }

@@ -11,6 +11,10 @@
 #include "MagicMousePad/MouseButton.h"
 
 
+// IMPORTANT NOTE: If a new message is added here, make sure that the largest
+// valid message is used in receive.cpp to specify the buffer size.
+
+
 namespace MagicMousePad {
 
 #pragma pack(push, 2)

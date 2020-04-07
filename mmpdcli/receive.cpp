@@ -6,8 +6,11 @@
 #include "MagicMousePad/receive.h"
 
 #include <stdexcept>
+#include <sstream>
 #include <system_error>
 #include <vector>
+
+#include <tchar.h>
 
 #include "MagicMousePad/messages.h"
 
@@ -31,37 +34,25 @@ void MagicMousePad::Receive(const int socket, const ReceiveCallback& callback) {
     }
 #endif /* defined(_WIN32) */
 
-    std::vector<char> buffer(sizeof(Header), 0);
+    // Note: the size of the largest datagram must be used here.
+    std::vector<char> buffer(2 * sizeof(MousePositionMessage), 0);
     sockaddr_storage peerStorage;
     auto peer = reinterpret_cast<sockaddr *>(&peerStorage);
-    int peerLen = 0;
+    int peerLen = sizeof(peerStorage);
 
     while (true) {
-        {
-            auto cnt = ::recvfrom(socket, buffer.data(), sizeof(Header),
-                0, peer, &peerLen);
-            if (cnt <= 0) {
-                break;
-            }
+        auto cnt = static_cast<int>(buffer.size());
+        cnt = ::recvfrom(socket, buffer.data(), cnt, 0, peer, &peerLen);
+        if (cnt <= 0) {
+            auto error = std::system_error(::WSAGetLastError(),
+                std::system_category(), "Failed to receive message");
+            ::OutputDebugStringA(error.what());
+            break;
         }
 
         auto header = reinterpret_cast<Header *>(buffer.data());
-        if (buffer.size() < header->Length) {
-            buffer.resize(header->Length);
-        }
-        header = reinterpret_cast<Header *>(buffer.data());
         ToHostOrder(*header);
-
-        {
-            auto cnt = ::recvfrom(socket, buffer.data() + sizeof(Header),
-                header->Length - sizeof(Header), 0, peer, &peerLen);
-            if (cnt <= 0) {
-                break;
-            }
-
-            callback(header, *peer, peerLen);
-        }
-
+        callback(header, *peer, peerLen);
     } /* end while (true) */
 
 #if defined(_WIN32)
