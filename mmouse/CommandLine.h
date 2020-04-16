@@ -41,8 +41,17 @@ public:
         return this->_server;
     }
 
+    /// <summary>
+    /// Gets whether positional updates have been disabled via the command
+    /// lines.
+    /// </summary>
+    inline bool IsDisabled(void) const {
+        return this->_isDisabled;
+    }
+
 private:
 
+    bool _isDisabled;
     std::uint16_t _port;
     sockaddr_storage _server;
 };

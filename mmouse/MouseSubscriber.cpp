@@ -11,7 +11,7 @@
  * MouseSubscriber::MouseSubscriber
  */
 MouseSubscriber::MouseSubscriber(const CommandLine& cmdLine)
-        : _cmdLine(cmdLine) {
+        : _cmdLine(cmdLine), _isDisabled(cmdLine.IsDisabled()) {
     ::OutputDebugString(_T("Subscribing to server ...\r\n"));
     this->Subscribe(this->_cmdLine.GetServer(), this->_cmdLine.GetPort());
 }
@@ -32,10 +32,13 @@ void MouseSubscriber::Announce(void) {
 void MouseSubscriber::OnMouseMove(const std::int32_t x,
         const std::int32_t y) {
     ::OutputDebugString(_T("Received mouse position.\r\n"));
-    std::stringstream msg;
-    msg << "received: " << x << "," << y << std::endl;
-    ::OutputDebugStringA(msg.str().c_str());
-    //::SetCursorPos(x, y);
+    //std::stringstream msg;
+    //msg << "received: " << x << "," << y << std::endl;
+    //::OutputDebugStringA(msg.str().c_str());
+
+    if (!this->_isDisabled) {
+        ::SetCursorPos(x, y);
+    }
 }
 
 
@@ -43,5 +46,6 @@ void MouseSubscriber::OnMouseMove(const std::int32_t x,
  * MouseSubscriber::OnMouseVisibilityChanged
  */
 void MouseSubscriber::OnMouseVisibilityChanged(const bool isVisible) {
+    ::OutputDebugString(_T("Received visibility update.\r\n"));
     ::ShowCursor(isVisible ? TRUE : FALSE);
 }

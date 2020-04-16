@@ -20,6 +20,14 @@ public:
 
     void Announce(void);
 
+    inline void Disable(void) {
+        this->_isDisabled = true;
+    }
+
+    inline void Enable(void) {
+        this->_isDisabled = false;
+    }
+
     inline void Stop(void) {
         this->Unsubscribe();
     }
@@ -35,4 +43,5 @@ protected:
 private:
 
     CommandLine _cmdLine;
+    std::atomic<bool> _isDisabled;
 };

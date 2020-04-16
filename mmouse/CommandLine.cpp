@@ -10,11 +10,17 @@
 /*
  * CommandLine::CommandLine
  */
-CommandLine::CommandLine(const TCHAR *cmdLine) : _port(0) {
+CommandLine::CommandLine(const TCHAR *cmdLine) : _isDisabled(false), _port(0) {
     ::ZeroMemory(&this->_server, sizeof(this->_server));
 
     auto args = MagicMousePad::Tokenise(std::basic_string<TCHAR>(cmdLine),
         std::isspace, true);
+
+    {
+        auto it = MagicMousePad::FindSwitch(_T("/disable"), args.begin(),
+            args.end());
+        this->_isDisabled = (it != args.end());
+    }
 
     {
         auto it = MagicMousePad::FindArgument(_T("/port"), args.begin(),
