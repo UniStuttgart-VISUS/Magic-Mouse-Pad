@@ -30,6 +30,13 @@ public:
     }
 
     /// <summary>
+    /// Gets the bounds the mouse can move in.
+    /// </summary>
+    inline const RECT &GetBounds(void) const {
+        return this->_bounds;
+    }
+
+    /// <summary>
     /// Gets the port the server should bind to.
     /// </summary>
     /// <remarks>
@@ -39,9 +46,18 @@ public:
         return this->_port;
     }
 
+    /// <summary>
+    /// Gets the start point of the virtual mouse.
+    /// </summary>
+    inline const POINT& GetStartPoint(void) const {
+        return this->_startPoint;
+    }
+
 private:
 
     std::int32_t _addressFamily;
+    RECT _bounds;
     std::uint16_t _port;
+    POINT _startPoint;
 
 };

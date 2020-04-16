@@ -7,7 +7,6 @@
 
 #include <stdexcept>
 #include <sstream>
-#include <system_error>
 #include <vector>
 
 #include <tchar.h>
@@ -18,8 +17,9 @@
 /*
  * MagicMousePad::Receive
  */
-void MagicMousePad::Receive(const int socket, const ReceiveCallback& callback) {
-    if (!callback) {
+void MagicMousePad::Receive(const SOCKET socket, const ReceiveCallback &onReceive,
+        const ErrorCallback &onError) {
+    if (!onReceive) {
         throw std::invalid_argument("The message callback must be valid");
     }
 
@@ -47,12 +47,16 @@ void MagicMousePad::Receive(const int socket, const ReceiveCallback& callback) {
             auto error = std::system_error(::WSAGetLastError(),
                 std::system_category(), "Failed to receive message");
             ::OutputDebugStringA(error.what());
-            break;
+            if (!onError || !onError(error)) {
+                // If no error callback is set or it returned false, exit
+                // the loop on error.
+                break;
+            }
         }
 
         auto header = reinterpret_cast<Header *>(buffer.data());
         ToHostOrder(*header);
-        callback(header, *peer, peerLen);
+        onReceive(header, *peer, peerLen);
     } /* end while (true) */
 
 #if defined(_WIN32)

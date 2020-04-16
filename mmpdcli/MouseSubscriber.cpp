@@ -12,14 +12,7 @@
 
 #include <ws2ipdef.h>
 
-#include "MagicMousePad/receive.h"
 #include "MagicMousePad/serveraddress.h"
-
-
-#if !defined(_WIN32)
-#define SOCKET_ERROR (-1)
-#define INVALID_SOCKET (-1)
-#endif /* !defined(_WIN32) */
 
 
 /*
@@ -36,6 +29,14 @@ MagicMousePad::MouseSubscriber::~MouseSubscriber(void) {
 MagicMousePad::MouseSubscriber::MouseSubscriber(void)
         : _sequenceNumber(0), _socket(INVALID_SOCKET) {
     ::ZeroMemory(&this->_server, sizeof(this->_server));
+}
+
+
+/*
+ * MagicMousePad::MouseSubscriber::OnError
+ */
+bool MagicMousePad::MouseSubscriber::OnError(const std::system_error& error) {
+    return false;
 }
 
 
@@ -108,7 +109,8 @@ void MagicMousePad::MouseSubscriber::Subscribe(const PortType port,
     assert(!this->_receiver.joinable());
     this->_receiver = std::thread(MagicMousePad::Receive, this->_socket,
         std::bind(&MouseSubscriber::OnMessage, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3));
+            std::placeholders::_2, std::placeholders::_3),
+        std::bind(&MouseSubscriber::OnError, this, std::placeholders::_1));
 }
 
 

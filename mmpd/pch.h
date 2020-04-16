@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cinttypes>
 #include <functional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <system_error>

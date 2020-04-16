@@ -8,6 +8,7 @@
 #include <WinSock2.h>
 
 #include <cassert>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <system_error>

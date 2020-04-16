@@ -58,6 +58,8 @@ private:
     template<class T>
     using OnSendCallback = std::function<void(const Client&)>;
 
+    bool OnError(const std::system_error &error);
+
     void OnMessage(MagicMousePad::Header *header,
         const sockaddr& clientAddr, const int clientAddrLen);
 

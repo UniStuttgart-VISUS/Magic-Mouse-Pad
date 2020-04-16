@@ -112,7 +112,8 @@ void Server::Start(const std::uint16_t port, const int addressFamily) {
     assert(!this->_receiver.joinable());
     this->_receiver = std::thread(MagicMousePad::Receive, this->_socket,
         std::bind(&Server::OnMessage, this, std::placeholders::_1,
-            std::placeholders::_2, std::placeholders::_3));
+            std::placeholders::_2, std::placeholders::_3),
+        std::bind(&Server::OnError, this, std::placeholders::_1));
 }
 
 
@@ -125,6 +126,14 @@ void Server::Stop(void) noexcept {
     if (this->_receiver.joinable()) {
         this->_receiver.join();
     }
+}
+
+
+/*
+ * Server::OnError
+ */
+bool Server::OnError(const std::system_error& error) {
+    return false;
 }
 
 

@@ -26,6 +26,21 @@ public:
 
     ~State(void);
 
+    inline const RECT& GetBounds(void) const {
+        return this->_bounds;
+    }
+
+    inline const POINT& GetPosition(void) const {
+        return this->_position;
+    }
+
+    inline bool IsUnbounded(void) const {
+        static const auto a = (std::numeric_limits<LONG>::max)();
+        static const auto i = std::numeric_limits<LONG>::lowest();
+        return (this->_bounds.left == i) && (this->_bounds.top == i)
+            && (this->_bounds.right == a) && (this->_bounds.bottom == a);
+    }
+
     inline void OnDraw(void) {
         this->_renderer.Draw();
     }
@@ -46,9 +61,12 @@ public:
 
 private:
 
+    RECT _bounds;
     WPARAM _escapeKey;
     HWND _hWnd;
     bool _isActive;
+    POINT _position;
+    POINT _prevPosition;
     Renderer _renderer;
     Server _server;
 };

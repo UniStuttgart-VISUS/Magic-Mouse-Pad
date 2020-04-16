@@ -6,6 +6,16 @@
 #pragma once
 
 #include <functional>
+#include <system_error>
+
+#if defined(_WIN32)
+#include <WinSock2.h>
+
+#else /* defined(_WIN32) */
+#define SOCKET int
+#define SOCKET_ERROR (-1)
+#define INVALID_SOCKET (-1)
+#endif /* defined(_WIN32) */
 
 
 /* Forward declarations. */
@@ -14,6 +24,11 @@ struct sockaddr;
 
 
 namespace MagicMousePad {
+
+    /// <summary>
+    /// The callback invoked on a receive rrror.
+    /// </summary>
+    typedef std::function<bool(const std::system_error &)> ErrorCallback;
 
     /// <summary>
     /// The type of the callback passed to <see cref="Receive" />.
@@ -39,7 +54,11 @@ namespace MagicMousePad {
     /// </remarks>
     /// <param name="senderAddr">The socket to receive from. If a socket error
     /// occurs on this socket, the method will exit.</param>
-    /// <param name="callback">The callback to be invoked for each message. The
+    /// <param name="onReceive">The callback to be invoked for each message. The
     /// body directly follows the header in memory.</param>.
-    void Receive(const int socket, const ReceiveCallback& callback);
+    /// <param name="onError">The callback to be invoked if a receive error
+    /// occurred. The callback can decide by its return value whether to
+    /// continue receiving.</param>.
+    void Receive(const SOCKET socket, const ReceiveCallback& onReceive,
+        const ErrorCallback& onError);
 }

@@ -46,5 +46,4 @@ std::pair<sockaddr *, int> MagicMousePad::InitialiseServerAddress(
         default:
             throw std::invalid_argument("Only IPv4 and IPv6 are supported");
     }
-
 }

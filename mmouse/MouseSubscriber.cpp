@@ -32,7 +32,10 @@ void MouseSubscriber::Announce(void) {
 void MouseSubscriber::OnMouseMove(const std::int32_t x,
         const std::int32_t y) {
     ::OutputDebugString(_T("Received mouse position.\r\n"));
-    ::SetCursorPos(x, y);
+    std::stringstream msg;
+    msg << "received: " << x << "," << y << std::endl;
+    ::OutputDebugStringA(msg.str().c_str());
+    //::SetCursorPos(x, y);
 }
 
 

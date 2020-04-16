@@ -13,6 +13,7 @@
 
 #include "MagicMousePad/messages.h"
 #include "MagicMousePad/MouseButton.h"
+#include "MagicMousePad/receive.h"
 
 
 namespace MagicMousePad {
@@ -62,6 +63,18 @@ namespace MagicMousePad {
         /// Initialises a new instance.
         /// </summary>
         MouseSubscriber(void);
+
+        /// <summary>
+        /// This method is invoked if a network error occurred.
+        /// </summary>
+        /// <remarks>
+        /// <para>This method can be called from an arbitrary thread context.
+        /// </para>
+        /// <para>The default implementation returns <c>false</c> to signal the
+        /// receiver to exit.</para>
+        /// </remarks>
+        /// <param name="button"></param>
+        virtual bool OnError(const std::system_error& error);
 
         /// <summary>
         /// This method is invoked if the subscriber receives a message that a
