@@ -50,7 +50,7 @@ void MouseSubscriber::OnMouseDown(const MagicMousePad::MouseButton button) {
                 break;
 
             default:
-                ::OutputDebugString(_T("Unexpected mouse button down"));
+                ::OutputDebugString(_T("Unexpected mouse button down.\r\n"));
                 return;
         }
 
@@ -99,7 +99,7 @@ void MouseSubscriber::OnMouseUp(const MagicMousePad::MouseButton button) {
             break;
 
         default:
-            ::OutputDebugString(_T("Unexpected mouse button down"));
+            ::OutputDebugString(_T("Unexpected mouse button up.\r\n"));
             return;
         }
 
