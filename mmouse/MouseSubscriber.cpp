@@ -31,6 +31,31 @@ void MouseSubscriber::Announce(void) {
  */
 void MouseSubscriber::OnMouseDown(const MagicMousePad::MouseButton button) {
     ::OutputDebugString(_T("Received mouse-down event.\r\n"));
+    if (!this->_isDisabled) {
+        INPUT input;
+        ::ZeroMemory(&input, sizeof(input));
+        input.type = INPUT_MOUSE;
+
+        switch (button) {
+            case MagicMousePad::MouseButton::Left:
+                input.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+                break;
+
+            case MagicMousePad::MouseButton::Middle:
+                input.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
+                break;
+
+            case MagicMousePad::MouseButton::Right:
+                input.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+                break;
+
+            default:
+                ::OutputDebugString(_T("Unexpected mouse button down"));
+                return;
+        }
+
+        ::SendInput(1, &input, sizeof(input));
+    }
 }
 
 
@@ -55,6 +80,32 @@ void MouseSubscriber::OnMouseMove(const std::int32_t x,
  */
 void MouseSubscriber::OnMouseUp(const MagicMousePad::MouseButton button) {
     ::OutputDebugString(_T("Received mouse-up event.\r\n"));
+    if (!this->_isDisabled) {
+        INPUT input;
+        ::ZeroMemory(&input, sizeof(input));
+        input.type = INPUT_MOUSE;
+
+        switch (button) {
+        case MagicMousePad::MouseButton::Left:
+            input.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+            break;
+
+        case MagicMousePad::MouseButton::Middle:
+            input.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
+            break;
+
+        case MagicMousePad::MouseButton::Right:
+            input.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+            break;
+
+        default:
+            ::OutputDebugString(_T("Unexpected mouse button down"));
+            return;
+        }
+
+        ::SendInput(1, &input, sizeof(input));
+    }
+
 }
 
 
