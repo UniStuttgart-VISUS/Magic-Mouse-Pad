@@ -35,7 +35,13 @@ public:
 protected:
 
     /// <inheritdoc />
+    void OnMouseDown(const MagicMousePad::MouseButton button) override;
+
+    /// <inheritdoc />
     void OnMouseMove(const std::int32_t x, const std::int32_t y) override;
+
+    /// <inheritdoc />
+    void OnMouseUp(const MagicMousePad::MouseButton button) override;
 
     /// <inheritdoc />
     void OnMouseVisibilityChanged(const bool isVisible) override;

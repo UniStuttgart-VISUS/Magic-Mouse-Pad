@@ -91,7 +91,7 @@ void State::OnMouseDown(const MagicMousePad::MouseButton button) {
     }
 
     if (this->_isActive) {
-        MagicMousePad::MouseUpMessage msg;
+        MagicMousePad::MouseDownMessage msg;
         msg.Button = static_cast<decltype(msg.Button)>(button);
         this->_server.Send(msg);
     }

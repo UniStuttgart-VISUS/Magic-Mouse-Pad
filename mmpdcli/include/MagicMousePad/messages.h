@@ -343,7 +343,7 @@ namespace MagicMousePad {
         /// Initialises a new instance.
         /// </summary>
         inline MouseUpMessage(void) : Button(0) {
-            this->Header.ID = MouseDownMessageID;
+            this->Header.ID = MouseUpMessageID;
             this->Header.Length = sizeof(*this);
         }
     };

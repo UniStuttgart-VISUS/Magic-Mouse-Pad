@@ -27,6 +27,14 @@ void MouseSubscriber::Announce(void) {
 
 
 /*
+ * MouseSubscriber::OnMouseDown
+ */
+void MouseSubscriber::OnMouseDown(const MagicMousePad::MouseButton button) {
+    ::OutputDebugString(_T("Received mouse-down event.\r\n"));
+}
+
+
+/*
  * MouseSubscriber::OnMouseMove
  */
 void MouseSubscriber::OnMouseMove(const std::int32_t x,
@@ -39,6 +47,14 @@ void MouseSubscriber::OnMouseMove(const std::int32_t x,
     if (!this->_isDisabled) {
         ::SetCursorPos(x, y);
     }
+}
+
+
+/*
+ * MouseSubscriber::OnMouseUp
+ */
+void MouseSubscriber::OnMouseUp(const MagicMousePad::MouseButton button) {
+    ::OutputDebugString(_T("Received mouse-up event.\r\n"));
 }
 
 
