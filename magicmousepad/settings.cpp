@@ -16,30 +16,47 @@ settings::settings(void) noexcept : _height(0), _width(0) {
 
 
 /*
+ * settings::address_length
+ */
+int settings::address_length(void) const noexcept {
+    switch (this->_address.ss_family) {
+        case AF_INET:
+            return sizeof(sockaddr_in);
+
+        case AF_INET6:
+            return sizeof(sockaddr_in6);
+
+        default:
+            return 0;
+    }
+}
+
+
+/*
  * nlohmann::adl_serializer<settings>::to_json
  */
 nlohmann::json nlohmann::adl_serializer<settings>::to_json(
         _In_ const settings& value) noexcept {
     auto retval = nlohmann::json::object();
 
-    switch (value.address().ss_family) {
+    switch (value._address.ss_family) {
         case AF_INET: {
             auto a = reinterpret_cast<const sockaddr_in&>(value._address);
-            retval["address"] = nlohmann::json::object();
-            retval["address"]["family"] = 4;
-            retval["address"]["port"] = ::ntohs(a.sin_port);
+            retval["Address"] = nlohmann::json::object();
+            retval["Address"]["Family"] = 4;
+            retval["Address"]["Port"] = ::ntohs(a.sin_port);
             } break;
 
         case AF_INET6: {
             auto a = reinterpret_cast<const sockaddr_in6&>(value._address);
-            retval["address"] = nlohmann::json::object();
-            retval["address"]["family"] = 6;
-            retval["address"]["port"] = ::ntohs(a.sin6_port);
+            retval["Address"] = nlohmann::json::object();
+            retval["Address"]["Family"] = 6;
+            retval["Address"]["Port"] = ::ntohs(a.sin6_port);
             } break;
     }
 
-    retval["height"] = value._height;
-    retval["width"] = value._width;
+    retval["Height"] = value._height;
+    retval["Width"] = value._width;
 
     return retval;
 }
@@ -53,42 +70,61 @@ settings nlohmann::adl_serializer<settings>::from_json(
     settings retval;
 
     {
-        auto it = json.find("address");
+        auto it = json.find("Address");
         if (it != json.end()) {
             ::memset(&retval._address, 0, sizeof(retval._address));
 
-            const auto f = it->find("family");
+            const auto f = it->find("Family");
             const auto ipv6 = ((f != it->end()) && (f->get<int>() == 6));
 
-            auto p = it->find("port");
+            auto p = it->find("Port");
             if (p != it->end()) {
+                auto port = p->get<std::uint16_t>();
+
                 if (ipv6) {
-                    auto a = reinterpret_cast<const sockaddr_in6 &>(
-                        retval._address);
+                    auto& a = reinterpret_cast<sockaddr_in6&>(retval._address);
                     a.sin6_family = AF_INET6;
                     a.sin6_addr = in6addr_any;
-                    a.sin6_port = ::htons(p->get<std::uint16_t>());
+                    a.sin6_port = ::htons(port);
 
                 } else {
-                    auto a = reinterpret_cast<const sockaddr_in&>(
-                        retval._address);
+                    auto& a = reinterpret_cast<sockaddr_in&>(retval._address);
                     a.sin_family = AF_INET;
                     a.sin_addr.s_addr = INADDR_ANY;
-                    a.sin_port = ::htons(p->get<std::uint16_t>());
+                    a.sin_port = ::htons(port);
                 }
             }
         } /* if (it != json.end()) */
     }
 
     {
-        auto it = json.find("height");
+        auto it = json.find("Height");
         retval._height = (it != json.end()) ? it->get<std::size_t>() : 0;
     }
 
     {
-        auto it = json.find("width");
+        auto it = json.find("Width");
         retval._width = (it != json.end()) ? it->get<std::size_t>() : 0;
     }
 
     return retval;
+}
+
+
+/*
+ * std::less<sockaddr_storage>::operator ()
+ */
+bool std::less<sockaddr_storage>::operator ()(_In_ const sockaddr_storage& lhs,
+        _In_ const sockaddr_storage& rhs) const noexcept {
+    const auto dp = lhs.ss_family - rhs.ss_family;
+
+    if (dp < 0) {
+        return true;
+
+    } else if (dp > 0) {
+        return false;
+
+    } else {
+        return (::memcmp(&lhs, &rhs, sizeof(sockaddr_storage)) < 0);
+    }
 }

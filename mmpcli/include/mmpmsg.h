@@ -8,7 +8,8 @@
 #define _MMPMSG_H
 #pragma once
 
-#include <cinttypes>
+#include <inttypes.h>
+#include <string.h>
 
 #include "mmpapi.h"
 
@@ -19,16 +20,28 @@
 typedef int32_t mmp_msg_id;
 
 
+#define mmp_msgid_discover ((mmp_msg_id) 0x00000001)
+
 /// <summary>
 /// A message for discovering the magic mouse pad.
 /// </summary>
 typedef struct MMPCLI_API mmp_msg_discover_t {
     /// <summary>
-    /// The message ID.
+    /// The message ID, which must be in network-byte order on the wire.
     /// </summary>
     mmp_msg_id id;
+
+#if defined(__cplusplus)
+    /// <summary>
+    /// Initialises a new instance.
+    /// </summary>
+    inline mmp_msg_discover_t(void) noexcept
+        : id(::htonl(mmp_msgid_discover)) { }
+#endif /* defined(__cplusplus) */
 } mmp_msg_discover;
 
+
+#define mmp_msgid_announce ((mmp_msg_id) 0x00000002)
 
 /// <summary>
 /// The response the magic mouse pad sends when it receives a
@@ -36,16 +49,32 @@ typedef struct MMPCLI_API mmp_msg_discover_t {
 /// </summary>
 typedef struct MMPCLI_API mmp_msg_announce_t {
     /// <summary>
-    /// The message ID.
+    /// The message ID, which must be in network-byte order on the wire..
     /// </summary>
     mmp_msg_id id;
 
     /// <summary>
-    /// The address of the magic mouse pad.
+    /// The port the maging mouse pad is listening on. The receiver should use
+    /// address it got this message from, but if a port other than zero is 
+    /// specified here, it should switch the port to this value.
     /// </summary>
-    struct sockaddr_storage address;
+    /// <remarks>
+    /// The port is in network-byte order and can directly be copied into a
+    /// socket address.
+    /// </remarks>
+    uint16_t port;
+
+#if defined(__cplusplus)
+    /// <summary>
+    /// Initialises a new instance.
+    /// </summary>
+    inline mmp_msg_announce_t(void) noexcept : id(::htonl(mmp_msgid_announce)),
+        port(0) { }
+#endif /* defined(__cplusplus) */
 } mmp_msg_announce;
 
+
+#define mmp_msgid_connect ((mmp_msg_id) 0x00000100)
 
 /// <summary>
 /// The client sends this as the first message to make itself known to the
@@ -53,10 +82,18 @@ typedef struct MMPCLI_API mmp_msg_announce_t {
 /// </summary>
 typedef struct MMPCLI_API mmp_msg_connect_t {
     /// <summary>
-    /// The message ID.
+    /// The message ID, which must be in network-byte order on the wire.
     /// </summary>
     mmp_msg_id id;
 
+#if defined(__cplusplus)
+    /// <summary>
+    /// Initialises a new instance.
+    /// </summary>
+    inline mmp_msg_connect_t(void) noexcept : id(::htonl(mmp_msgid_connect)) { }
+#endif /* defined(__cplusplus) */
 } mmp_msg_connect;
+
+
 
 #endif /* !defined(_MMPMSG_H) */

@@ -17,6 +17,7 @@
 
 #include <wil/resource.h>
 
+#include "server.h"
 #include "settings.h"
 
 
@@ -147,6 +148,7 @@ private:
     int _dy;
     int _height;
     HINSTANCE _instance;
+    std::unique_ptr<server> _server;
     settings _settings;
     int _width;
     wil::unique_hwnd _window;

@@ -12,6 +12,7 @@
 #include <sal.h>
 #include <WinSock2.h>
 #include <Ws2def.h>
+#include <Ws2ipdef.h>
 #include <Windows.h>
 
 

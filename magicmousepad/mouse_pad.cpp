@@ -26,21 +26,23 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
 
     auto exStyle = WS_EX_APPWINDOW;
     auto style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-    TCHAR *title = nullptr;
     auto x = CW_USEDEFAULT;
     auto y = CW_USEDEFAULT;
     auto width = CW_USEDEFAULT;
     auto height = CW_USEDEFAULT;
 
-    THROW_LAST_ERROR_IF(::LoadString(instance,
+    TCHAR *buf_title = nullptr;
+    auto cnt_title = ::LoadString(instance,
         IDS_APPTITLE,
-        reinterpret_cast<TCHAR *>(&title),
-        0) <= 0);
+        reinterpret_cast<TCHAR *>(&buf_title),
+        0);
+    THROW_LAST_ERROR_IF(cnt_title <= 0);
+    std::basic_string<TCHAR> title(buf_title, cnt_title);
 
     auto retval = std::unique_ptr<mouse_pad>(new mouse_pad(instance));
     retval->_window.reset(::CreateWindowEx(exStyle,
         class_name,
-        title,
+        title.c_str(),
         style,
         x,
         y,
@@ -52,6 +54,7 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
         retval.get()));
     THROW_LAST_ERROR_IF(!retval->_window);
 
+    // Parse the configuration file.
     std::ifstream stream;
     if ((command_line != nullptr) && (*command_line != 0)) {
         stream.open(command_line);
@@ -62,6 +65,9 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
     nlohmann::json json;
     stream >> json;
     retval->_settings = json.get<settings>();
+
+    // Start the server.
+    retval->_server = std::make_unique<server>(retval->_settings);
 
     return retval;
 }

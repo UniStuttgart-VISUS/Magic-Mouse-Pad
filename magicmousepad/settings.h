@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 
 #include <WinSock2.h>
@@ -30,9 +31,15 @@ public:
     /// Gets the address the server should be bound to.
     /// </summary>
     /// <returns></returns>
-    inline const sockaddr_storage& address(void) const noexcept {
-        return this->_address;
+    inline const sockaddr *address(void) const noexcept {
+        return reinterpret_cast<const sockaddr *>(&this->_address);
     }
+
+    /// <summary>
+    /// Answer the size of the server address in bytes.
+    /// </summary>
+    /// <returns></returns>
+    int address_length(void) const noexcept;
 
     /// <summary>
     /// Gets the height of the mouse pad in pixels. If this height is zero,
@@ -67,9 +74,18 @@ private:
 /// </summary>
 template<> struct nlohmann::adl_serializer<settings> {
 
-    /// <inheritdoc />
     static nlohmann::json to_json(_In_ const settings& value) noexcept;
 
-    /// <inheritdoc />
     static settings from_json(_In_ const nlohmann::json& json) noexcept;
+};
+
+
+/// <summary>
+/// Compares two socket addresses for sorting, which allows addresses to be used
+/// in sets.
+/// </summary>
+template<> struct std::less<sockaddr_storage> {
+
+    bool operator ()(_In_ const sockaddr_storage& lhs,
+        _In_ const sockaddr_storage& rhs) const noexcept;
 };

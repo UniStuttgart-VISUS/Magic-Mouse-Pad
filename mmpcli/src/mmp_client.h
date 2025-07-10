@@ -6,6 +6,9 @@
 
 #include "mmpcli.h"
 
+#include <thread>
+#include <vector>
+
 #include <wil/resource.h>
 
 
@@ -33,6 +36,15 @@ public:
         : _config(config) { }
 
 private:
+
+    /// <summary>
+    /// Find the broadcast addresses using the given <paramref name="port"/> for
+    /// all active adapters on the system.
+    /// </summary>
+    /// <param name="port"></param>
+    /// <returns></returns>
+    static std::vector<sockaddr_in> bcast_addresses(
+        _In_ const std::uint16_t port);
 
     mmp_configuration _config;
     wil::unique_socket _socket;

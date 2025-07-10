@@ -3,6 +3,7 @@
 // Used by magicmousepad.rc
 //
 #define IDS_APPTITLE                    101
+#define IDS_ERROR_SERVER                102
 
 // Next default values for new objects
 // 

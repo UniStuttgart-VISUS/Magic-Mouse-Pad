@@ -32,6 +32,13 @@ typedef struct MMPCLI_API mmp_configuration_t {
     uint32_t timeout;
 
     /// <summary>
+    /// The time in milliseconds before retrying discovery. This should be less
+    /// than <paramref name="timeout"/>, but definitely greater than zero to
+    /// prevent the network from being flooded with discovery requests.
+    /// </summary>
+    uint32_t rate_limit;
+
+    /// <summary>
     /// The width of the overall range the mouse can travel horizontally in
     /// number of pixels.
     /// </summary>
@@ -49,7 +56,7 @@ typedef struct MMPCLI_API mmp_configuration_t {
     /// global mouse position it receives from the magic mouse pad to determine
     /// the location of the mouse on the local desktop.
     /// </summary>
-    int32_t x;
+    int32_t offset_x;
 
     /// <summary>
     /// The vertical offset of the local instance in the overall range of pixels
@@ -57,14 +64,35 @@ typedef struct MMPCLI_API mmp_configuration_t {
     /// mouse position it receives from the magic mouse pad to determine the
     /// location of the mouse on the local desktop.
     /// </summary>
-    int32_t y;
+    int32_t offset_y;
+
+    /// <summary>
+    /// The horizontal starting position when the first position from the magic
+    /// mouse pad is received. Typically, callers would set this to the centre
+    /// of the virtual screen for best user experience.
+    /// </summary>
+    int32_t start_x;
+
+    /// <summary>
+    /// The vertical starting position when the first position from the magic
+    /// mouse pad is received. Typically, callers would set this to the centre
+    /// of the virtual screen for best user experience.
+    /// </summary>
+    int32_t start_y;
 
 #if defined(__cplusplus)
     /// <summary>
     /// Default constructor for the configuration.
     /// </summary>
     inline mmp_configuration_t(void) noexcept
-            : timeout(0), width(0), height(0), x(0), y(0) {
+            : timeout(0),
+            rate_limit(0),
+            width(0),
+            height(0),
+            offset_x(0),
+            offset_y(0),
+            start_x(0),
+            start_y(0) {
         ::memset(&this->address, 0, sizeof(this->address));
     }
 #endif /* defined(__cplusplus) */
