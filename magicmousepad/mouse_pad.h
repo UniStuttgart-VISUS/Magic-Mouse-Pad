@@ -4,15 +4,20 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#pragma once
+
 #include <memory>
 #include <stdexcept>
 
 #include <mmp_key.h>
 #include <mmp_mouse_button.h>
+#include <WinSock2.h>
 #include <Windows.h>
 #include <tchar.h>
 
 #include <wil/resource.h>
+
+#include "settings.h"
 
 
 /// <summary>
@@ -30,8 +35,12 @@ public:
     /// <param name="instance">The instance handle of the application. If this
     /// parameter is <c>NULL</c>, the current module handle will be used.
     /// </param>
+    /// <param name="command_line">The command line arguments passed to the
+    /// application. If any, this will be interpreted as the path to the JSON
+    /// configuration file.</param>
     /// <returns>The magic mouse pad.</returns>
-    static std::unique_ptr<mouse_pad> create(_In_ HINSTANCE instance);
+    static std::unique_ptr<mouse_pad> create(_In_ HINSTANCE instance,
+        _In_z_ const TCHAR *command_line);
 
 private:
 
@@ -134,8 +143,11 @@ private:
         _In_ const std::uint16_t height) noexcept;
 
     bool _active;
+    int _dx;
+    int _dy;
+    int _height;
     HINSTANCE _instance;
-    POINT _position;
-    SIZE _size;
+    settings _settings;
+    int _width;
     wil::unique_hwnd _window;
 };

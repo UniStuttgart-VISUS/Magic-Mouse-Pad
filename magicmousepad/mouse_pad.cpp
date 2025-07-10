@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cinttypes>
 #include <cstdlib>
+#include <fstream>
 
 #include <wil/result.h>
 
@@ -19,7 +20,8 @@
 /*
  * mouse_pad::create
  */
-std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance) {
+std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
+        _In_z_ const TCHAR *command_line) {
     register_window_class(instance);
 
     auto exStyle = WS_EX_APPWINDOW;
@@ -49,6 +51,17 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance) {
         instance,
         retval.get()));
     THROW_LAST_ERROR_IF(!retval->_window);
+
+    std::ifstream stream;
+    if ((command_line != nullptr) && (*command_line != 0)) {
+        stream.open(command_line);
+    } else {
+        stream.open("appsettings.json");
+    }
+
+    nlohmann::json json;
+    stream >> json;
+    retval->_settings = json.get<settings>();
 
     return retval;
 }
@@ -199,9 +212,11 @@ LRESULT mouse_pad::wnd_proc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
  */
 mouse_pad::mouse_pad(_In_ HINSTANCE instance)
         : _active(false),
+        _dx(0),
+        _dy(0),
+        _height(0),
         _instance(instance),
-        _position({ 0, 0 }),
-        _size({ 0, 0 }) {
+        _width(0) {
     if (this->_instance == NULL) {
         this->_instance = ::GetModuleHandle(nullptr);
     }
@@ -241,11 +256,11 @@ LRESULT mouse_pad::on_mouse_down(
         _In_ const mmp_mouse_button button,
         _In_ const std::int16_t x,
         _In_ const std::int16_t y) noexcept {
-    if (!this->_active && ((this->_size.cx == 0) || (this->_size.cy == 0))) {
+    if (!this->_active && ((this->_width == 0) || (this->_height == 0))) {
         RECT rect;
         ::GetClientRect(this->_window.get(), &rect);
-        this->_size.cx = std::abs(rect.right - rect.left);
-        this->_size.cy = std::abs(rect.bottom - rect.top);
+        this->_width = std::abs(rect.right - rect.left);
+        this->_height = std::abs(rect.bottom - rect.top);
     }
 
     this->_active = true;
@@ -265,21 +280,29 @@ LRESULT mouse_pad::on_mouse_move(_In_ const std::int16_t x,
     POINT pos { x, y };
 
     if (x < 0) {
-        pos.x = this->_size.cx - 1;
-    } else if (x >= this->_size.cx) {
+        pos.x = this->_width - 1;
+        this->_dx -= this->_width;
+
+    } else if (x >= this->_width) {
         pos.x = 0;
+        this->_dx += this->_width;
     }
 
     if (y < 0) {
-        pos.y = this->_size.cy - 1;
-    } else if (y >= this->_size.cy) {
+        pos.y = this->_height - 1;
+        this->_dy -= this->_height;
+
+    } else if (y >= this->_height) {
         pos.y = 0;
+        this->_dy += this->_height;
     }
 
     if ((pos.x != x) || (pos.y != y)) {
         ::ClientToScreen(this->_window.get(), &pos);
         ::SetCursorPos(pos.x, pos.y);
     }
+
+    // TODO:
 
     return 0;
 }
@@ -316,7 +339,7 @@ LRESULT mouse_pad::on_paint(void) noexcept {
  */
 LRESULT mouse_pad::on_resize(_In_ const std::uint16_t width,
         _In_ const std::uint16_t height) noexcept {
-    this->_size.cx = width;
-    this->_size.cy = height;
+    this->_width = width;
+    this->_height = height;
     return 0;
 }

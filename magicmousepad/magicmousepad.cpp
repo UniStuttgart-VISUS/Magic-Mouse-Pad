@@ -4,9 +4,9 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-#include <wil/resource.h>
-
 #include "mouse_pad.h"
+
+#include <wil/resource.h>
 
 
 /// <summary>
@@ -22,7 +22,6 @@ int APIENTRY _tWinMain(_In_ const HINSTANCE instance,
         _In_ const LPTSTR command_line,
         _In_ const int show) {
     UNREFERENCED_PARAMETER(prev_instance);
-    UNREFERENCED_PARAMETER(command_line);
     UNREFERENCED_PARAMETER(show);
 
     try {
@@ -35,7 +34,7 @@ int APIENTRY _tWinMain(_In_ const HINSTANCE instance,
         }
 
         auto wsa_cleanup = wil::scope_exit([](void) { ::WSACleanup(); });
-        auto mouse_pad = mouse_pad::create(instance);
+        auto mouse_pad = mouse_pad::create(instance, command_line);
 
         while (::GetMessage(&msg, NULL, 0, 0)) {
             ::TranslateMessage(&msg);
