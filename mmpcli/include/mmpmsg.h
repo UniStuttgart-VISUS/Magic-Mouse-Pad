@@ -95,5 +95,36 @@ typedef struct MMPCLI_API mmp_msg_connect_t {
 } mmp_msg_connect;
 
 
+#define mmp_msgid_mouse_move ((mmp_msg_id) 0x00001000)
+
+/// <summary>
+/// The server sends this datagram to all clients to update the mouse cursor
+/// relative to the virtual screen.
+/// </summary>
+typedef struct MMPCLI_API mmp_msg_mouse_move_t {
+    /// <summary>
+    /// The message ID, which must be in network-byte order on the wire.
+    /// </summary>
+    mmp_msg_id id;
+
+    /// <summary>
+    /// The horizontal position in pixels, in network-byte order.
+    /// </summary>
+    int32_t x;
+
+    /// <summary>
+    /// The horizontal position in pixels, in network-byte order.
+    /// </summary>
+    int32_t y;
+
+#if defined(__cplusplus)
+    /// <summary>
+    /// Initialises a new instance.
+    /// </summary>
+    inline mmp_msg_mouse_move_t(void) noexcept
+        : id(::htonl(mmp_msgid_mouse_move)), x(0), y(0) { }
+#endif /* defined(__cplusplus) */
+} mmp_msg_mouse_move;
+
 
 #endif /* !defined(_MMPMSG_H) */

@@ -10,6 +10,7 @@
 #include <limits>
 
 #include <mmpmsg.h>
+#include <mmpthreadname.h>
 #include <iphlpapi.h>
 #include <Windows.h>
 
@@ -18,7 +19,7 @@
  * server::server
  */
 server::server(_In_ const settings& settings, _In_opt_ HWND window)
-        : _addresses(addresses()), _running(true), _window(window) {
+        : _running(true), _window(window) {
     this->_server = std::thread(&server::serve, this, settings);
 }
 
@@ -31,6 +32,26 @@ server::~server(void) noexcept {
     this->_socket.reset();
     if (this->_server.joinable()) {
         this->_server.join();
+    }
+}
+
+
+/*
+ * server::send
+ */
+void server::send(_In_reads_(cnt) const char *data,
+        _In_ const int cnt) noexcept {
+    std::lock_guard<std::mutex> lock(this->_lock);
+    for (auto it = this->_clients.begin(); it != this->_clients.end();) {
+        if (::sendto(this->_socket.get(),
+                data, cnt,
+                0,
+                *it, it->address_length()) == SOCKET_ERROR) {
+            // We just remove all clients that have failed.
+            it = this->_clients.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 
@@ -139,75 +160,77 @@ std::uint16_t server::get_port(_In_ const sockaddr *src) {
 }
 
 
-/*
- * server::address
- */
-sockaddr_storage server::address(_In_ const sockaddr_storage& peer) {
-    // Determines the common prefix length of 'lhs' and 'rhs'.
-    auto common_prefix = [](const sockaddr_storage& lhs,
-            const sockaddr_storage& rhs) {
-        std::size_t retval = 0;
-        if (lhs.ss_family != rhs.ss_family) {
-            return retval;
-        }
-
-        const std::uint8_t *l = nullptr;
-        std::size_t len = 0;
-        const std::uint8_t *r = nullptr;
-
-        switch (lhs.ss_family) {
-            case AF_INET: {
-                auto& a = reinterpret_cast<const sockaddr_in&>(lhs);
-                l = reinterpret_cast<const std::uint8_t *>(&a.sin_addr);
-                len = sizeof(a.sin_addr);
-                } break;
-
-            case AF_INET6: {
-                auto& a = reinterpret_cast<const sockaddr_in6&>(lhs);
-                l = reinterpret_cast<const std::uint8_t *>(&a.sin6_addr);
-                len = sizeof(a.sin6_addr);
-                } break;
-
-            default:
-                return retval;
-        }
-        assert(l != nullptr);
-        assert(r != nullptr);
-
-        for (std::size_t i = 0; i < len; ++i) {
-            if (l[i] == r[i]) {
-                retval += 8;
-
-            } else {
-                for (int bit = 7; (bit >= 0); --bit) {
-                    if ((l[i] & (1 << bit)) == (r[i] & (1 << bit))) {
-                        ++retval;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-
-        return retval;
-    };
-
-    // Sorts the addresses such that the one with the longest common prefix
-    // comes first.
-    std::sort(this->_addresses.begin(), this->_addresses.end(),
-        [&peer, common_prefix](const sockaddr_storage& l,
-                const sockaddr_storage& r) {
-            return (common_prefix(l, peer) > common_prefix(r, peer));
-        });
-
-    return this->_addresses.front();
-}
+///*
+// * server::address
+// */
+//sockaddr_storage server::address(_In_ const sockaddr_storage& peer) {
+//    // Determines the common prefix length of 'lhs' and 'rhs'.
+//    auto common_prefix = [](const sockaddr_storage& lhs,
+//            const sockaddr_storage& rhs) {
+//        std::size_t retval = 0;
+//        if (lhs.ss_family != rhs.ss_family) {
+//            return retval;
+//        }
+//
+//        const std::uint8_t *l = nullptr;
+//        std::size_t len = 0;
+//        const std::uint8_t *r = nullptr;
+//
+//        switch (lhs.ss_family) {
+//            case AF_INET: {
+//                auto& a = reinterpret_cast<const sockaddr_in&>(lhs);
+//                l = reinterpret_cast<const std::uint8_t *>(&a.sin_addr);
+//                len = sizeof(a.sin_addr);
+//                } break;
+//
+//            case AF_INET6: {
+//                auto& a = reinterpret_cast<const sockaddr_in6&>(lhs);
+//                l = reinterpret_cast<const std::uint8_t *>(&a.sin6_addr);
+//                len = sizeof(a.sin6_addr);
+//                } break;
+//
+//            default:
+//                return retval;
+//        }
+//        assert(l != nullptr);
+//        assert(r != nullptr);
+//
+//        for (std::size_t i = 0; i < len; ++i) {
+//            if (l[i] == r[i]) {
+//                retval += 8;
+//
+//            } else {
+//                for (int bit = 7; (bit >= 0); --bit) {
+//                    if ((l[i] & (1 << bit)) == (r[i] & (1 << bit))) {
+//                        ++retval;
+//                    } else {
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return retval;
+//    };
+//
+//    // Sorts the addresses such that the one with the longest common prefix
+//    // comes first.
+//    std::sort(this->_addresses.begin(), this->_addresses.end(),
+//        [&peer, common_prefix](const sockaddr_storage& l,
+//                const sockaddr_storage& r) {
+//            return (common_prefix(l, peer) > common_prefix(r, peer));
+//        });
+//
+//    return this->_addresses.front();
+//}
 
 
 /*
  * server::serve
  */
 void server::serve(_In_ const settings settings) {
+    mmp_set_thread_name(-1, "Magic mouse pad receiver");
+
     try {
         std::array<char, (std::numeric_limits<std::uint16_t>::max)()> buffer;
         sockaddr_storage peer;
@@ -272,7 +295,7 @@ void server::serve(_In_ const settings settings) {
                     // In case of a connect request, we register the peer
                     // address as a client.
                     std::lock_guard<std::mutex> l(this->_lock);
-                    this->_clients.insert(peer);
+                    this->_clients.emplace(peer);
                     ::SendMessage(this->_window, WM_PAINT, 0, 0);
                     } break;
             }

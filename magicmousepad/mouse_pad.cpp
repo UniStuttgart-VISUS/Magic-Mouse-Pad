@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <mmpmsg.h>
+
 #include <wil/result.h>
 
 #include "resource.h"
@@ -272,7 +274,10 @@ LRESULT mouse_pad::on_mouse_down(
     this->_active = true;
     ::SetCapture(this->_window.get());
 
-    // TODO
+    //mmp_msg_mouse_move msg;
+    //msg.x = ::htonl(x + this->_dx);
+    //msg.y = ::htonl(y + this->_dy);
+    //this->_server->send(msg);
 
     return 0;
 }
@@ -308,7 +313,12 @@ LRESULT mouse_pad::on_mouse_move(_In_ const std::int16_t x,
         ::SetCursorPos(pos.x, pos.y);
     }
 
-    // TODO:
+    if (this->_active) {
+        mmp_msg_mouse_move msg;
+        msg.x = ::htonl(x + this->_dx);
+        msg.y = ::htonl(y + this->_dy);
+        this->_server->send(msg);
+    }
 
     return 0;
 }

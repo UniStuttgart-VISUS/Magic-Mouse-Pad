@@ -21,13 +21,18 @@
   <ItemGroup>
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\mmpcli.cpp" />
+    <ClCompile Include="src\mmpendpoint.cpp" />
     <ClCompile Include="src\mmpmsg.cpp" />
+    <ClCompile Include="src\mmpthreadname.cpp" />
     <ClCompile Include="src\mmp_client.cpp" />
+    <ClCompile Include="src\mmp_configuration.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\mmpapi.h" />
     <ClInclude Include="include\mmpcli.h" />
+    <ClInclude Include="include\mmpendpoint.h" />
     <ClInclude Include="include\mmpmsg.h" />
+    <ClInclude Include="include\mmpthreadname.h" />
     <ClInclude Include="include\mmp_configuration.h" />
     <ClInclude Include="include\mmp_key.h" />
     <ClInclude Include="include\mmp_mouse_button.h" />

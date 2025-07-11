@@ -159,12 +159,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="client.cpp" />
     <ClCompile Include="magicmousepad.cpp" />
     <ClCompile Include="mouse_pad.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="settings.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="client.h" />
     <ClInclude Include="mouse_pad.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="server.h" />

@@ -11,13 +11,15 @@
 template<class... TArguments>
 void tracer::operator ()(_In_z_ const char *const format,
         TArguments&&... arguments) noexcept {
-    constexpr const char *const prefix = "[%s:%d] ";
-    std::vector<char> buffer(::_scprintf(prefix, this->_file,
+    constexpr const char *const prefix = "[0x%08x, %s:%d] ";
+    const auto tid = ::GetCurrentThreadId();
+    std::vector<char> buffer(::_scprintf(prefix, tid, this->_file,
         this->_line) + 1);
 
     if (::sprintf_s(buffer.data(),
             buffer.size(),
             prefix,
+            tid,
             this->_file,
             this->_line) < 0) {
         return;
@@ -47,13 +49,15 @@ void tracer::operator ()(_In_z_ const char *const format,
 template<class... TArguments>
 void tracer::operator ()(_In_z_ const wchar_t *const format,
         TArguments&&... arguments) noexcept {
-    constexpr const wchar_t *const prefix = L"[%hs:%d] ";
-    std::vector<wchar_t> buffer(::_scwprintf(prefix, this->_file,
+    constexpr const wchar_t *const prefix = L"[0x%08x, %hs:%d] ";
+    const auto tid = ::GetCurrentThreadId();
+    std::vector<wchar_t> buffer(::_scwprintf(prefix, tid, this->_file,
         this->_line) + 1);
 
     if (::swprintf_s(buffer.data(),
             buffer.size(),
             prefix,
+            tid,
             this->_file,
             this->_line) < 0) {
         return;

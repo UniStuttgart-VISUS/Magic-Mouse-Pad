@@ -4,16 +4,7 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-#include <mmpcli.h>
-#include <tchar.h>
-#include <Windows.h>
-
-#include <wil/result.h>
+#include "tray_window.h"
 
 
 /// <summary>
@@ -23,20 +14,34 @@
 /// <param name="argc"></param>
 /// <param name="argv"></param>
 /// <returns></returns>
-int _tmain(_In_ const int argc, _In_reads_(argc) TCHAR *argv) {
+int APIENTRY _tWinMain(_In_ const HINSTANCE instance,
+        _In_opt_ const HINSTANCE prev_instance,
+        _In_ const LPTSTR command_line,
+        _In_ const int show) {
+    UNREFERENCED_PARAMETER(prev_instance);
+    UNREFERENCED_PARAMETER(show);
+
     try {
-        // Configure the mouse pad.
-        mmp_configuration config;
-        ::mmp_configure_discovery(&config, 14863, 0, 500);
+        MSG msg;
+        WSADATA wsa_data;
 
-        // Connect to the mouse pad.
-        auto handle = visus::mmp::connect(config);
+        {
+            DWORD status = ::WSAStartup(MAKEWORD(2, 2), &wsa_data);
+            THROW_WIN32_IF(status, status != NO_ERROR);
+        }
 
-        //::mmp_connect(han)
+        auto wsa_cleanup = wil::scope_exit([](void) { ::WSACleanup(); });
+        auto tray_wnd = tray_window::create(instance);
 
-        return 0;
+        while (::GetMessage(&msg, NULL, 0, 0)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+
+        return static_cast<int>(msg.wParam);
     } catch (std::exception& ex) {
-        std::cerr << ex.what() << std::endl;
+        ::OutputDebugStringA(ex.what());
+        ::MessageBoxA(NULL, ex.what(), nullptr, MB_OK | MB_ICONERROR);
         return -1;
     }
 }

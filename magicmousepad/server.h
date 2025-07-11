@@ -7,16 +7,14 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <set>
 #include <thread>
 #include <vector>
 
-#include <WinSock2.h>
-
-#include <wil/resource.h>
-
+#include "client.h"
 #include "settings.h"
 
 
@@ -41,6 +39,24 @@ public:
     /// </summary>
     ~server(void) noexcept;
 
+    /// <summary>
+    /// Sends the specified datagram to all connected clients.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="cnt"></param>
+    void send(_In_reads_(cnt) const char *data, _In_ const int cnt) noexcept;
+
+    /// <summary>
+    /// Sends the specified message to all connected clients.
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
+    /// <param name="message"></param>
+    template<class TMessage>
+    inline void send(_In_ const TMessage& message) noexcept {
+        this->send(reinterpret_cast<const char *>(std::addressof(message)),
+            static_cast<int>(sizeof(TMessage)));
+    }
+
 private:
 
     static std::vector<sockaddr_storage> addresses(void);
@@ -50,12 +66,11 @@ private:
 
     static std::uint16_t get_port(_In_ const sockaddr *src);
 
-    sockaddr_storage address(_In_ const sockaddr_storage& peer);
+    //sockaddr_storage address(_In_ const sockaddr_storage& peer);
 
     void serve(_In_ const settings settings);
 
-    std::vector<sockaddr_storage> _addresses;
-    std::set<sockaddr_storage> _clients;
+    std::set<client> _clients;
     std::mutex _lock;
     std::atomic<bool> _running;
     wil::unique_socket _socket;

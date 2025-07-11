@@ -7,84 +7,8 @@
 #include "mmpcli.h"
 
 #include "mmp_client.h"
+#include "mmpmsg.h"
 #include "trace.h"
-
-
-/*
- * ::mmp_configure_discovery
- */
-_Success_(return == 0) int mmp_configure_discovery(
-        _In_ mmp_configuration *configuration,
-        _In_ const uint16_t port,
-        _In_ const uint32_t timeout,
-        _In_ const uint32_t rate_limit) {
-    if (configuration == nullptr) {
-        MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-    if (port == 0) {
-        MMP_TRACE("The port for the discovery is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-
-    configuration->timeout = timeout;
-    configuration->rate_limit = rate_limit;
-
-    sockaddr_in address;
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = ::htons(port);
-
-    return ::mmp_configure_server4(configuration, &address);
-}
-
-
-/*
- * ::mmp_configure_server4
- */
-_Success_(return == 0) int mmp_configure_server4(
-        _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in *server) {
-    if (configuration == nullptr) {
-        MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-    if (server == nullptr) {
-        MMP_TRACE("The server address is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-
-    ::memcpy(&configuration->address, server, sizeof(sockaddr_in));
-
-    // Coerce the address family to IPv4.
-    configuration->address.ss_family = AF_INET;
-
-    return 0;
-}
-
-
-/*
- * mmp_configure_server6
- */
-_Success_(return == 0) int mmp_configure_server6(
-        _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in6 *server) {
-    if (configuration == nullptr) {
-        MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-    if (server == nullptr) {
-        MMP_TRACE("The server address is invalid.");
-        return ERROR_INVALID_PARAMETER;
-    }
-
-    ::memcpy(&configuration->address, server, sizeof(sockaddr_in6));
-
-    // Coerce the address family to IPv6.
-    configuration->address.ss_family = AF_INET6;
-
-    return 0;
-}
 
 
 /*
@@ -92,7 +16,7 @@ _Success_(return == 0) int mmp_configure_server6(
  */
 _Success_(return == 0) int mmp_connect(
         _Out_ mmp_handle *handle,
-        _In_ const mmp_configuration *configuration) {
+        _In_ mmp_configuration *configuration) {
     if (handle == nullptr) {
         MMP_TRACE("The output parameter for the handle is invalid.");
         return ERROR_INVALID_PARAMETER;
@@ -102,23 +26,25 @@ _Success_(return == 0) int mmp_connect(
         return ERROR_INVALID_PARAMETER;
     }
 
-    if ((*handle = new (std::nothrow) mmp_client(*configuration)) == nullptr) {
-        MMP_TRACE("Insufficient memory to allocate mmp_client.");
-        return ERROR_OUTOFMEMORY;
-    }
-
     // Optionally performs discovery of the server address of the mouse pad.
-    {
-        auto retval = mmp_client::discover(**handle);
-        if (retval != 0) {
-            return retval;
-        }
+    RETURN_IF_WIN32_ERROR(mmp_client::discover(*configuration));
+
+    // The client will connect in its constructor. Note that we must catch here,
+    // because the constructor could fail with a socket error besides the
+    // potential out-of-memory scenario.
+    try {
+        MMP_TRACE(L"Allocating the magic mouse pad client context.");
+        *handle = new mmp_client(*configuration);
+        return 0;
+
+    } catch (std::bad_alloc&) {
+        MMP_TRACE(L"Insufficient memory to allocate client context.");
+        return ERROR_OUTOFMEMORY;
+
+    } catch (const std::exception& ex) {
+        MMP_TRACE("Failed to create client context: %hs", ex.what());
+        return ERROR_INVALID_PARAMETER;
     }
-
-
-
-    throw "TODO";
-    return 0;
 }
 
 
