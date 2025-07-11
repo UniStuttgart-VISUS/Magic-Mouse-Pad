@@ -22,6 +22,10 @@
 typedef struct mmp_client *mmp_handle;
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif define(__cplusplus)
+
 /// <summary>
 /// Connects to the magic mouse pad configured in
 /// <paramref name="configuration"/> and returns a handle to the connection
@@ -30,7 +34,7 @@ typedef struct mmp_client *mmp_handle;
 /// <param name="handle">Receives the handle for the client.</param>
 /// <param name="configuration">The configuration for the mouse pad.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_connect(
+_Success_(return == 0) MMPCLI_API int mmp_connect(
     _Out_ mmp_handle *handle,
     _In_ mmp_configuration *configuration);
 
@@ -41,8 +45,12 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_connect(
 /// <param name="handle">The handle representing the client connection to be
 /// terminated.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_disconnect(
+_Success_(return == 0) MMPCLI_API int mmp_disconnect(
     _In_ mmp_handle handle);
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif define(__cplusplus)
 
 
 #if defined(__cplusplus)

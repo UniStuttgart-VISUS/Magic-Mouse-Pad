@@ -143,6 +143,19 @@ private:
     LRESULT on_resize(_In_ const std::uint16_t width,
         _In_ const std::uint16_t height) noexcept;
 
+    /// <summary>
+    /// Sets the given position in the message.
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
+    /// <param name="message"></param>
+    template<class TMessage>
+    inline void set_position(_In_ TMessage& message,
+            _In_ const std::int32_t x,
+            _In_ const std::int32_t y) const noexcept {
+        message.x = ::ntohl(x + this->_dx);
+        message.y = ::ntohl(y + this->_dy);
+    }
+
     bool _active;
     int _dx;
     int _dy;

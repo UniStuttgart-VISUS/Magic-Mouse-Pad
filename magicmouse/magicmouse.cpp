@@ -11,8 +11,10 @@
 /// Entry point of the magic mouse application that receives position updates
 /// from a magic mouse pad and moves the mouse cursor accordingly.
 /// </summary>
-/// <param name="argc"></param>
-/// <param name="argv"></param>
+/// <param name="instance"></param>
+/// <param name="prev_instance"></param>
+/// <param name="command_line"></param>
+/// <param name="show"></param>
 /// <returns></returns>
 int APIENTRY _tWinMain(_In_ const HINSTANCE instance,
         _In_opt_ const HINSTANCE prev_instance,

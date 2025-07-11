@@ -6,6 +6,8 @@
 
 #include "settings.h"
 
+#include <wil/registry.h>
+#include <wil/result.h>
 
 /*
  * settings::settings
@@ -29,6 +31,53 @@ int settings::address_length(void) const noexcept {
         default:
             return 0;
     }
+}
+
+
+/*
+ * settings::load
+ */
+void settings::load(_In_ HKEY key) {
+    THROW_WIN32_IF(ERROR_INVALID_HANDLE, !key);
+
+    const auto get_uint = [key](LPCWSTR name, uint32_t& dst) {
+        DWORD v;
+        auto r = SUCCEEDED(wil::reg::get_value_dword_nothrow(key, name, &v));
+
+        if (r) {
+            dst = v;
+        }
+
+        return r;
+    };
+
+    {
+        std::uint32_t af;
+        if (get_uint(L"AddressFamily", af)) {
+            ::memset(&this->_address, 0, sizeof(this->_address));
+            this->_address.ss_family = af;
+        }
+    }
+
+    {
+        std::uint32_t port;
+        if (get_uint(L"Port", port)) {
+            switch (this->_address.ss_family) {
+                case AF_INET: {
+                    auto& a = reinterpret_cast<sockaddr_in&>(this->_address);
+                    a.sin_port = ::htons(port);
+                    } break;
+
+                case AF_INET6: {
+                    auto& a = reinterpret_cast<sockaddr_in6&>(this->_address);
+                    a.sin6_port = ::htons(port);
+                    } break;
+            }
+        }
+    }
+
+    get_uint(L"Height", this->_height);
+    get_uint(L"Width", this->_width);
 }
 
 
@@ -99,12 +148,12 @@ settings nlohmann::adl_serializer<settings>::from_json(
 
     {
         auto it = json.find("Height");
-        retval._height = (it != json.end()) ? it->get<std::size_t>() : 0;
+        retval._height = (it != json.end()) ? it->get<std::uint32_t>() : 0;
     }
 
     {
         auto it = json.find("Width");
-        retval._width = (it != json.end()) ? it->get<std::size_t>() : 0;
+        retval._width = (it != json.end()) ? it->get<std::uint32_t>() : 0;
     }
 
     return retval;

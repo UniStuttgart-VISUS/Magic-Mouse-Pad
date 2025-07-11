@@ -96,7 +96,11 @@ private:
     /// </returns>
     int announce(void);
 
-    //void on_mouse_button(_In_ const mmp_msg_mouse_button);
+    /// <summary>
+    /// Processes a button press or release message.
+    /// </summary>
+    /// <param name=""></param>
+    void on_mouse_button(_In_ const mmp_msg_mouse_button *msg);
 
     /// <summary>
     /// Processes a mouse move message.

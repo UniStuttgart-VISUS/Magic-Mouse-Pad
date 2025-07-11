@@ -274,10 +274,11 @@ LRESULT mouse_pad::on_mouse_down(
     this->_active = true;
     ::SetCapture(this->_window.get());
 
-    //mmp_msg_mouse_move msg;
-    //msg.x = ::htonl(x + this->_dx);
-    //msg.y = ::htonl(y + this->_dy);
-    //this->_server->send(msg);
+    mmp_msg_mouse_button msg;
+    msg.button = button;
+    msg.down = true;
+    this->set_position(msg, x, y);
+    this->_server->send(msg);
 
     return 0;
 }
@@ -315,8 +316,7 @@ LRESULT mouse_pad::on_mouse_move(_In_ const std::int16_t x,
 
     if (this->_active) {
         mmp_msg_mouse_move msg;
-        msg.x = ::htonl(x + this->_dx);
-        msg.y = ::htonl(y + this->_dy);
+        this->set_position(msg, x, y);
         this->_server->send(msg);
     }
 
@@ -331,7 +331,11 @@ LRESULT mouse_pad::on_mouse_up(_In_ const mmp_mouse_button button,
         _In_ const std::int16_t x,
         _In_ const std::int16_t y) noexcept {
     if (this->_active) {
-        // TODO: report
+        mmp_msg_mouse_button msg;
+        msg.button = button;
+        msg.down = false;
+        this->set_position(msg, x, y);
+        this->_server->send(msg);
     }
 
     return 0;

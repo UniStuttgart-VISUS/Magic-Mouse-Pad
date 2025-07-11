@@ -12,6 +12,8 @@
 #include <string.h>
 
 #include "mmpapi.h"
+#include "mmp_key.h"
+#include "mmp_mouse_button.h"
 
 
 /// <summary>
@@ -126,5 +128,51 @@ typedef struct MMPCLI_API mmp_msg_mouse_move_t {
 #endif /* defined(__cplusplus) */
 } mmp_msg_mouse_move;
 
+
+#define mmp_msgid_mouse_button ((mmp_msg_id) 0x00001001)
+
+/// <summary>
+/// The server sends this datagram to all clients to notify them about a mouse
+/// button being pressed or released.
+/// </summary>
+typedef struct MMPCLI_API mmp_msg_mouse_button_t {
+    /// <summary>
+    /// The message ID, which must be in network-byte order on the wire.
+    /// </summary>
+    mmp_msg_id id;
+
+    /// <summary>
+    /// Identifies the button that was pressed or released.
+    /// </summary>
+    mmp_mouse_button button;
+
+    /// <summary>
+    /// Indicates whether the button was pressed (<see langword="true"/>) or
+    /// released (<see langword="false"/>).
+    /// </summary>
+    bool down;
+
+    /// <summary>
+    /// The horizontal position in pixels, in network-byte order.
+    /// </summary>
+    int32_t x;
+
+    /// <summary>
+    /// The horizontal position in pixels, in network-byte order.
+    /// </summary>
+    int32_t y;
+
+#if defined(__cplusplus)
+    /// <summary>
+    /// Initialises a new instance.
+    /// </summary>
+    inline mmp_msg_mouse_button_t(void) noexcept
+        : id(::htonl(mmp_msgid_mouse_button)),
+        button(mmp_mouse_button_none),
+        down(false),
+        x(0),
+        y(0) { }
+#endif /* defined(__cplusplus) */
+} mmp_msg_mouse_button;
 
 #endif /* !defined(_MMPMSG_H) */

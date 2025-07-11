@@ -4,6 +4,6 @@ The Magic Mouse Pad is a C++ application that allows for using pixel-perfect mou
 ## Getting started
 The project comprises three components: [mmpcli](mmpcli) is the client library, which is also used by the server for certain functions. Applications interested in mouse events should link against this library to connect to an instance of the server.
 
-[magicmousepad](magicmousepad) is this server component. It shows a blank window that captures the mouse on click and notifies all registered listeners about movemenets.
+[magicmousepad](magicmousepad) is this server component. It shows a blank window that captures the mouse on click and notifies all registered listeners about movements. The capture of the mouse pad can be released by pressing the **Pause** key.
 
 Finally [magicmouse](magicmouse) is a demo tool that moves the mouse around based on the data received from the server application.

@@ -10,6 +10,11 @@
 
 #include "mmpapi.h"
 
+
+#if defined(__cplusplus)
+extern "C" {
+#endif define(__cplusplus)
+
 /// <summary>
 /// Parses the given string as end point (service) address, either IPv4 or
 /// IPv6 or DNS name.
@@ -18,7 +23,7 @@
 /// </param>
 /// <param name="string">The string to be parsed.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-extern "C" int MMPCLI_API mmp_parse_end_pointa(
+int MMPCLI_API mmp_parse_end_pointa(
     _Out_ sockaddr_storage *end_point,
     _In_z_ const char *string);
 
@@ -30,7 +35,7 @@ extern "C" int MMPCLI_API mmp_parse_end_pointa(
 /// </param>
 /// <param name="string">The string to be parsed.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-extern "C" int MMPCLI_API mmp_parse_end_pointw(
+int MMPCLI_API mmp_parse_end_pointw(
     _Out_ sockaddr_storage *end_point,
     _In_z_ const wchar_t *string);
 
@@ -40,5 +45,9 @@ extern "C" int MMPCLI_API mmp_parse_end_pointw(
 #else /* (defined(UNICODE) && !defined(_UNICODE)) */
 #define mmp_parse_end_point mmp_parse_end_pointa
 #endif /* (defined(UNICODE) && !defined(_UNICODE)) */
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif define(__cplusplus)
 
 #endif /* !defined(_MMPENDPOINT_H) */

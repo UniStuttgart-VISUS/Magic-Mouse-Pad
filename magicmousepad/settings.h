@@ -6,10 +6,12 @@
 
 #pragma once
 
+#include <cinttypes>
 #include <functional>
 #include <string>
 
 #include <WinSock2.h>
+#include <Windows.h>
 #include <WS2tcpip.h>
 
 #include <nlohmann/json.hpp>
@@ -46,24 +48,31 @@ public:
     /// the scrolling area is unbounded vertically.
     /// </summary>
     /// <returns></returns>
-    inline std::size_t height(void) const noexcept {
+    inline std::uint32_t height(void) const noexcept {
         return this->_height;
     }
+
+    /// <summary>
+    /// Loads the settings from the given registry key.
+    /// </summary>
+    /// <param name="key">A registry key holding the configuration values to
+    /// be loaded.</param>
+    void load(_In_ HKEY key);
 
     /// <summary>
     /// Gets the width of the mouse pad in pixels. If this width is zero,
     /// the scrolling area is unbounded horizontally.
     /// </summary>
     /// <returns></returns>
-    inline std::size_t width(void) const noexcept {
+    inline std::uint32_t width(void) const noexcept {
         return this->_width;
     }
 
 private:
 
     sockaddr_storage _address;
-    std::size_t _height;
-    std::size_t _width;
+    std::uint32_t _height;
+    std::uint32_t _width;
 
     friend struct nlohmann::adl_serializer<settings>;
 };

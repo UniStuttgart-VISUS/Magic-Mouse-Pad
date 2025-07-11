@@ -18,7 +18,7 @@
  */
 _Success_(return == 0) int mmp_configure_client4(
         _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in *client) {
+        _In_ const struct sockaddr_in *client) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;
@@ -42,7 +42,7 @@ _Success_(return == 0) int mmp_configure_client4(
  */
 _Success_(return == 0) int mmp_configure_client6(
         _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in6 *client) {
+        _In_ const struct sockaddr_in6 *client) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;
@@ -148,7 +148,7 @@ _Success_(return == 0) int mmp_configure_from_registry_key(
  */
 _Success_(return == 0) int mmp_configure_server4(
         _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in *server) {
+        _In_ const struct sockaddr_in *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;
@@ -172,7 +172,7 @@ _Success_(return == 0) int mmp_configure_server4(
  */
 _Success_(return == 0) int mmp_configure_server6(
         _In_ mmp_configuration *configuration,
-        _In_ const sockaddr_in6 *server) {
+        _In_ const struct sockaddr_in6 *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;

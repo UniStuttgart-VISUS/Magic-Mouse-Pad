@@ -8,7 +8,8 @@
 #define _MMP_CONFIGURATION_H
 #pragma once
 
-#include <cinttypes>
+#include <inttypes.h>
+#include <WinSock2.h>
 
 #include "mmpapi.h"
 #include "mmp_mouse_button.h"
@@ -153,6 +154,10 @@ typedef struct MMPCLI_API mmp_configuration_t {
 } mmp_configuration;
 
 
+#if defined(__cplusplus)
+extern "C" {
+#endif define(__cplusplus)
+
 /// <summary>
 /// Adjusts the <paramref name="configuration"/> to bind to the given client
 /// address.
@@ -160,9 +165,9 @@ typedef struct MMPCLI_API mmp_configuration_t {
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="client">The address to bind the client to.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_client4(
+_Success_(return == 0) MMPCLI_API int mmp_configure_client4(
     _In_ mmp_configuration *configuration,
-    _In_ const sockaddr_in *client);
+    _In_ const struct sockaddr_in *client);
 
 
 /// <summary>
@@ -172,9 +177,9 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_client4(
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="client">The address to bind the client to.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_client6(
+_Success_(return == 0) MMPCLI_API int mmp_configure_client6(
     _In_ mmp_configuration *configuration,
-    _In_ const sockaddr_in6 *client);
+    _In_ const struct sockaddr_in6 *client);
 
 
 /// <summary>
@@ -189,7 +194,7 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_client6(
 /// This should be less than <paramref name="timeout"/>, but definitely greater
 /// than zero to prevent the network from being flooded with discovery requests.
 /// <returns></returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_discovery(
+_Success_(return == 0) MMPCLI_API int mmp_configure_discovery(
     _In_ mmp_configuration *configuration,
     _In_ const uint16_t port,
     _In_ const uint32_t timeout,
@@ -205,7 +210,7 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_discovery(
 /// <param name="key">The registry key to load the data from. The caller remains
 /// owner of this key and must release it once the function returned.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_from_registry_key(
+_Success_(return == 0) MMPCLI_API int mmp_configure_from_registry_key(
     _In_ mmp_configuration *configuration,
     _In_ HKEY key);
 #endif /* defined(_WIN32) */
@@ -218,9 +223,9 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_from_registry_key
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="server">The address of the server to connect to.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_server4(
+_Success_(return == 0) MMPCLI_API int mmp_configure_server4(
     _In_ mmp_configuration *configuration,
-    _In_ const sockaddr_in *server);
+    _In_ const struct sockaddr_in *server);
 
 
 /// <summary>
@@ -230,9 +235,9 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_server4(
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="server">The address of the server to connect to.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_server6(
+_Success_(return == 0) MMPCLI_API int mmp_configure_server6(
     _In_ mmp_configuration *configuration,
-    _In_ const sockaddr_in6 *server);
+    _In_ const struct sockaddr_in6 *server);
 
 
 /// <summary>
@@ -242,7 +247,7 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_server6(
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="server">The end point address of the server.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_servera(
+_Success_(return == 0) MMPCLI_API int mmp_configure_servera(
     _In_ mmp_configuration *configuration,
     _In_z_ const char *server);
 
@@ -254,7 +259,7 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_servera(
 /// <param name="configuration">The configuration object to be adjusted.</param>
 /// <param name="server">The end point address of the server.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-_Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_serverw(
+_Success_(return == 0) MMPCLI_API int mmp_configure_serverw(
     _In_ mmp_configuration *configuration,
     _In_z_ const wchar_t *server);
 
@@ -264,5 +269,9 @@ _Success_(return == 0) extern "C" MMPCLI_API int mmp_configure_serverw(
 #else /* !defined(UNICODE) && !defined(_UNICODE) */
 #define mmp_configure_server mmp_configure_servera
 #endif /* (defined(UNICODE) || defined(_UNICODE)) */
+
+#if defined(__cplusplus)
+} /* extern "C" */
+#endif define(__cplusplus)
 
 #endif /* !defined(_MMP_CONFIGURATION_H) */

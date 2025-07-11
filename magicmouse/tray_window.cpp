@@ -254,6 +254,7 @@ void tray_window::on_mouse_button(_In_ const mmp_mouse_button button,
     ::SendInput(1, &input, sizeof(input));
 }
 
+#include <sstream>
 
 /*
  * tray_window::on_mouse_move
@@ -262,5 +263,9 @@ void tray_window::on_mouse_move(
         _In_ const int32_t x,
         _In_ const int32_t y,
         _In_opt_ void *context) noexcept {
-    ::SetCursorPos(x, y);
+    std::stringstream ss;
+    ss << "Mouse moved to: " << x << ", " << y << std::endl;
+    auto s = ss.str();
+    ::OutputDebugStringA(s.c_str());
+    //::SetCursorPos(x, y);
 }

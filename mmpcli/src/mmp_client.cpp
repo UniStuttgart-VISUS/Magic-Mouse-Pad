@@ -397,6 +397,20 @@ int mmp_client::announce(void) {
 
 
 /*
+ * mmp_client::on_mouse_button
+ */
+void mmp_client::on_mouse_button(_In_ const mmp_msg_mouse_button *msg) {
+    assert(msg != nullptr);
+    assert(msg->id == mmp_msgid_mouse_button);
+    if (this->_config.on_mouse_button != nullptr) {
+        auto p = this->xform_position(msg);
+        this->_config.on_mouse_button(msg->button, msg->down, p.first,
+            p.second, this->_config.context);
+    }
+}
+
+
+/*
  * mmp_client::on_mouse_move
  */
 void mmp_client::on_mouse_move(_In_ const mmp_msg_mouse_move *msg) {
