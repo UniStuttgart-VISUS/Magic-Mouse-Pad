@@ -263,9 +263,5 @@ void tray_window::on_mouse_move(
         _In_ const int32_t x,
         _In_ const int32_t y,
         _In_opt_ void *context) noexcept {
-    std::stringstream ss;
-    ss << "Mouse moved to: " << x << ", " << y << std::endl;
-    auto s = ss.str();
-    ::OutputDebugStringA(s.c_str());
-    //::SetCursorPos(x, y);
+    ::SetCursorPos(x, y);
 }
