@@ -4,6 +4,8 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#pragma once
+
 #include "mmpcli.h"
 
 #include <cassert>
@@ -106,8 +108,21 @@ private:
     /// </summary>
     void receive(void);
 
+    /// <summary>
+    /// Transforms the position in the given <paramref name="message"/>
+    /// according to the rules specified in <see cref="_config"/>.
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    template<class TMessage>
+    std::pair<std::int32_t, std::int32_t> xform_position(
+        _In_ const TMessage *message);
+
     mmp_configuration _config;
     std::thread _receiver;
     std::atomic<bool> _running;
     wil::unique_socket _socket;
 };
+
+#include "mmp_client.inl"

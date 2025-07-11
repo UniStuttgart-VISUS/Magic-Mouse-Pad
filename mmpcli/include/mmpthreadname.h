@@ -4,6 +4,10 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#if !defined(_MMPTHREADNAME_H)
+#define _MMPTHREADNAME_H
+#pragma once
+
 #include <inttypes.h>
 
 #include "mmpapi.h"
@@ -16,5 +20,7 @@
 /// the calling thread.</param>
 /// <param name="thread_name">The name of the thread. If this is
 /// <see langword="nullptr" />, the function does nothing.</param>
-void MMPCLI_API mmp_set_thread_name(_In_ const uint32_t thread_id,
+extern "C" void MMPCLI_API mmp_set_thread_name(_In_ const uint32_t thread_id,
     _In_opt_z_ const char *thread_name);
+
+#endif /* !defined(_MMPTHREADNAME_H) */

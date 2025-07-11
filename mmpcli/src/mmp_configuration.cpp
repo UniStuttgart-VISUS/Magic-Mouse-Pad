@@ -201,7 +201,7 @@ _Success_(return == 0) int mmp_configure_servera(
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;
     }
-    return ::parse_end_pointa(&configuration->server, server);
+    return ::mmp_parse_end_pointa(&configuration->server, server);
 }
 
 
@@ -215,5 +215,5 @@ _Success_(return == 0) int mmp_configure_serverw(
         MMP_TRACE("The client configuration is invalid.");
         return ERROR_INVALID_PARAMETER;
     }
-    return ::parse_end_pointw(&configuration->server, server);
+    return ::mmp_parse_end_pointw(&configuration->server, server);
 }

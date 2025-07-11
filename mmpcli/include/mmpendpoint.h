@@ -18,7 +18,8 @@
 /// </param>
 /// <param name="string">The string to be parsed.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-extern "C" int MMPCLI_API parse_end_pointa(_Out_ sockaddr_storage *end_point,
+extern "C" int MMPCLI_API mmp_parse_end_pointa(
+    _Out_ sockaddr_storage *end_point,
     _In_z_ const char *string);
 
 /// <summary>
@@ -29,14 +30,15 @@ extern "C" int MMPCLI_API parse_end_pointa(_Out_ sockaddr_storage *end_point,
 /// </param>
 /// <param name="string">The string to be parsed.</param>
 /// <returns>Zero in case of success, a system error code otherwise.</returns>
-extern "C" int MMPCLI_API parse_end_pointw(_Out_ sockaddr_storage *end_point,
+extern "C" int MMPCLI_API mmp_parse_end_pointw(
+    _Out_ sockaddr_storage *end_point,
     _In_z_ const wchar_t *string);
 
 
 #if (defined(UNICODE) || defined(_UNICODE))
-#define parse_end_point parse_end_pointw
+#define mmp_parse_end_point mmp_parse_end_pointw
 #else /* (defined(UNICODE) && !defined(_UNICODE)) */
-#define parse_end_point parse_end_pointa
+#define mmp_parse_end_point mmp_parse_end_pointa
 #endif /* (defined(UNICODE) && !defined(_UNICODE)) */
 
 #endif /* !defined(_MMPENDPOINT_H) */

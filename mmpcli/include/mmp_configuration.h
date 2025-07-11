@@ -17,12 +17,21 @@
 
 /// <summary>
 /// If this flag is set in the <see cref="mmp_configuration"/>, the client
-/// library will clip the mouse coordinates to the tile defined by
-/// <see cref="mmp_configuration::start_x"/>,
-/// <see cref="mmp_configuration::start_y"/> and the desktop area of the client
-/// before reporting it to the client application.
+/// library will clip the mouse coordinates to the virtual screen size of
+/// <see cref="mmp_configuration::width"/> and
+/// <see cref="mmp_configuration::height"/>.
 /// </summary>
 #define mmp_flag_clip ((uint32_t) 0x00000001)
+
+/// <summary>
+/// If this flag is set in the <see cref="mmp_configuration"/>, the client
+/// library will offset the mouse position by the local offset specified in
+/// <see cref="mmp_configuration::offset_x"/> and
+/// <see cref="mmp_configuration::offset_y"/>. If <see cref="mmp_flag_clip" />
+/// is also set, the coordinates are additionally clipped against the size
+/// of the local desktop.
+/// </summary>
+#define mmp_flag_local ((uint32_t) 0x00000002)
 
 
 /// <summary>

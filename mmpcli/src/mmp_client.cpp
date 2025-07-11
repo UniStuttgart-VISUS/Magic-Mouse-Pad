@@ -403,10 +403,8 @@ void mmp_client::on_mouse_move(_In_ const mmp_msg_mouse_move *msg) {
     assert(msg != nullptr);
     assert(msg->id == mmp_msgid_mouse_move);
     if (this->_config.on_mouse_move != nullptr) {
-        this->_config.on_mouse_move(
-            ::ntohl(msg->x),
-            ::ntohl(msg->y),
-            this->_config.context);
+        auto p = this->xform_position(msg);
+        this->_config.on_mouse_move(p.first, p.second, this->_config.context);
     }
 }
 

@@ -21,7 +21,7 @@
 /*
  * ::parse_end_pointa
  */
-int parse_end_pointa(_Out_ sockaddr_storage *end_point,
+int mmp_parse_end_pointa(_Out_ sockaddr_storage *end_point,
         _In_z_ const char *string) {
     if (string == nullptr) {
         MMP_TRACE("The input string to be parsed is invalid.");
@@ -29,14 +29,14 @@ int parse_end_pointa(_Out_ sockaddr_storage *end_point,
 
     static std::wstring_convert<std::codecvt_utf8<wchar_t>> cvt;
     auto s = cvt.from_bytes(string);
-    return parse_end_pointw(end_point, s.c_str());
+    return mmp_parse_end_pointw(end_point, s.c_str());
 }
 
 
 /*
  * ::parse_end_pointw
  */
-int parse_end_pointw(_Out_ sockaddr_storage *end_point,
+int mmp_parse_end_pointw(_Out_ sockaddr_storage *end_point,
         _In_z_ const wchar_t *string) {
     if (end_point == nullptr) {
         MMP_TRACE("The output pointer for the end point is invalid.");
