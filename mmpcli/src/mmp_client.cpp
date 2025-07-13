@@ -401,26 +401,52 @@ int mmp_client::bind(_In_ wil::unique_socket& socket,
 
 #if (defined(_DEBUG) || defined(DEBUG))
     {
-        sockaddr_storage addr{ 0 };
+        sockaddr_storage addr { 0 };
         int cnt_addr = sizeof(addr);
         ::getsockname(socket.get(),
             reinterpret_cast<sockaddr *>(&addr),
             &cnt_addr);
-        switch (addr.ss_family) {
-            case AF_INET:
-                MMP_TRACE(L"IPv4 socket bound to port %u.", ::ntohs(
-                    reinterpret_cast<const sockaddr_in&>(addr).sin_port));
-                break;
-
-            case AF_INET6:
-                MMP_TRACE(L"IPv6 socket bound to port %u.", ::ntohs(
-                    reinterpret_cast<const sockaddr_in6&>(addr).sin6_port));
-                break;
-        }
+        auto str = to_string(addr);
+        MMP_TRACE(L"Socket bound to %s.", str.c_str());
     }
 #endif /* (defined(_DEBUG) || defined(DEBUG)) */
 
     return 0;
+}
+
+/*
+ * mmp_client::to_string
+ */
+std::wstring mmp_client::to_string(_In_ const sockaddr_storage& address) {
+    std::wstring retval(INET6_ADDRSTRLEN, L'\0');
+
+    switch (address.ss_family) {
+        case AF_INET: {
+            auto& a = reinterpret_cast<const sockaddr_in&>(address);
+            if (::InetNtopW(address.ss_family,
+                    &a.sin_addr,
+                    &retval[0],
+                    retval.size())
+                    != nullptr) {
+                auto p = ::ntohs(a.sin_port);
+                retval.resize(::wcslen(retval.c_str()));
+                retval += L":" + std::to_wstring(p);
+            } break;
+        }
+        case AF_INET6: {
+            auto& a = reinterpret_cast<const sockaddr_in6&>(address);
+            if (::InetNtopW(address.ss_family,
+                    &a.sin6_addr,
+                    &retval[0],
+                    retval.size())
+                    != nullptr) {
+                auto p = ::ntohs(a.sin6_port);
+                retval.resize(::wcslen(retval.c_str()));
+                retval += L":" + std::to_wstring(p);
+            } break;
+        }
+    }
+    return retval;
 }
 
 
@@ -435,6 +461,11 @@ int mmp_client::connect(void) {
 
     mmp_msg_connect msg;
     assert(msg.id == ::ntohl(mmp_msgid_connect));
+
+#if (defined(_DEBUG) || defined(DEBUG))
+    auto addr = to_string(this->_config.server);
+    MMP_TRACE(L"Sending connect message to %s.", addr.c_str());
+#endif /* defined(_DEBUG) || defined(DEBUG) */
 
     if (::sendto(this->_socket.get(),
             reinterpret_cast<const char *>(&msg),
@@ -516,7 +547,9 @@ void mmp_client::receive(void) {
             return;
         }
         if (len < sizeof(mmp_msg_id)) {
-            MMP_TRACE(L"Received an invalid datagram, which will be ignored.");
+            MMP_TRACE(L"Received an invalid datagram (%u bytes instead of the "
+                L"minimum reqired %u bytes), which will be ignored.", len,
+                sizeof(mmp_msg_id));
             continue;
         }
 
@@ -537,37 +570,53 @@ _Success_(return == true) bool mmp_client::receive_from(
         _In_ std::vector<char>& buffer,
         _Out_ DWORD& size,
         _Out_ sockaddr_storage& peer) {
-    WSABUF buf;
-    OVERLAPPED overlapped = { 0 };
-    DWORD flags = 0;
-    INT peer_len = sizeof(peer);
-
-    buf.buf = buffer.data();
-    buf.len = static_cast<ULONG>(buffer.size());
-
-    overlapped.hEvent = this->_event.get();
-
-    if (::WSARecvFrom(this->_socket.get(),
-            &buf, 1,
-            &size,
-            &flags,
-            reinterpret_cast<sockaddr *>(&peer),
-            &peer_len,
-            &overlapped,
-            nullptr) == 0) {
-        return true;
+    auto peer_len = static_cast<int>(sizeof(peer));
+    const auto len = ::recvfrom(this->_socket.get(),
+        buffer.data(),
+        static_cast<int>(buffer.size()),
+        0,
+        reinterpret_cast<sockaddr *>(&peer),
+        &peer_len);
+    if (len == SOCKET_ERROR) {
+        MMP_TRACE(L"Receiving a datagram failed with error %d.",
+            ::WSAGetLastError());
+        return false;
     }
 
-    auto error = ::WSAGetLastError();
-    if (error == WSA_IO_PENDING) {
-        if (::WaitForSingleObject(overlapped.hEvent, INFINITE)
-                == WAIT_OBJECT_0) {
-            return true;
-        }
+    size = static_cast<DWORD>(len);
+    return true;
 
-        error = ::WSAGetLastError();
-    }
+    //WSABUF buf;
+    //OVERLAPPED overlapped = { 0 };
+    //DWORD flags = 0;
+    //INT peer_len = sizeof(peer);
 
-    MMP_TRACE(L"Receiving a datagram failed with error %d.", error);
-    return false;
+    //buf.buf = buffer.data();
+    //buf.len = static_cast<ULONG>(buffer.size());
+
+    //overlapped.hEvent = this->_event.get();
+
+    //if (::WSARecvFrom(this->_socket.get(),
+    //        &buf, 1,
+    //        &size,
+    //        &flags,
+    //        reinterpret_cast<sockaddr *>(&peer),
+    //        &peer_len,
+    //        &overlapped,
+    //        nullptr) == 0) {
+    //    return true;
+    //}
+
+    //auto error = ::WSAGetLastError();
+    //if (error == WSA_IO_PENDING) {
+    //    if (::WaitForSingleObject(overlapped.hEvent, INFINITE)
+    //            == WAIT_OBJECT_0) {
+    //        return true;
+    //    }
+
+    //    error = ::WSAGetLastError();
+    //}
+
+    //MMP_TRACE(L"Receiving a datagram failed with error %d.", error);
+    //return false;
 }

@@ -9,6 +9,7 @@
 #include "mmpcli.h"
 
 #include <cassert>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -99,6 +100,14 @@ private:
     /// </returns>
     static int bind(_In_ wil::unique_socket& socket,
         _In_ sockaddr_storage& address);
+
+    /// <summary>
+    /// Convert the given socket <paramref name="address"/> into a
+    /// human-readable representation.
+    /// </summary>
+    /// <param name="address"></param>
+    /// <returns></returns>
+    static std::wstring to_string(_In_ const sockaddr_storage& address);
 
     /// <summary>
     /// Sends an announcement message to the mouse pad server in order to
