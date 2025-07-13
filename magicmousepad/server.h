@@ -50,11 +50,15 @@ public:
     /// <summary>
     /// Sends the specified message to all connected clients.
     /// </summary>
+    /// <remarks>
+    /// The method will update the sequence number in the message before sending
+    /// it.
+    /// </remarks>
     /// <typeparam name="TMessage"></typeparam>
     /// <param name="message"></param>
     template<class TMessage>
     inline void send(_In_ TMessage& message) noexcept {
-        message.sequence_number = this->_sequence_number++;
+        message.sequence_number = ::htonl(this->_sequence_number++);
         this->send(reinterpret_cast<const char *>(std::addressof(message)),
             static_cast<int>(sizeof(TMessage)));
     }

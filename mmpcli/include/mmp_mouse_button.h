@@ -8,41 +8,43 @@
 #define _MMP_MOUSE_BUTTON_H
 #pragma once
 
+#include <inttypes.h>   
+
 
 /// <summary>
-/// Enumerates possible mouse buttons that the magic mouse pad can report to the
-/// client.
+/// Identifies mouse buttons that the magic mouse pad can report to the client.
 /// </summary>
-typedef enum mmp_mouse_button_t {
-    /// <summary>
-    /// None of the buttons is selected. This should never be reported.
-    /// </summary>
-    mmp_mouse_button_none = 0,
+typedef uint8_t mmp_mouse_button;
 
-    /// <summary>
-    /// Identifies the left mouse button.
-    /// </summary>
-    mmp_mouse_button_left = 0x0001,
 
-    /// <summary>
-    /// Identifies the right mouse button.
-    /// </summary>
-    mmp_mouse_button_right = 0x0002,
+/// <summary>
+/// None of the buttons is selected. This should never be reported.
+/// </summary>
+#define mmp_mouse_button_none ((mmp_mouse_button) 0)
 
-    /// <summary>
-    /// Identifies the middle mouse button.
-    /// </summary>
-    mmp_mouse_button_middle = 0x0010,
+/// <summary>
+/// Identifies the left mouse button.
+/// </summary>
+#define mmp_mouse_button_left ((mmp_mouse_button) 0x01)
 
-    /// <summary>
-    /// Identifies the X1 button.
-    /// </summary>
-    mmp_mouse_button_x1= 0x0020,
+/// <summary>
+/// Identifies the right mouse button.
+/// </summary>
+#define mmp_mouse_button_right ((mmp_mouse_button) 0x02)
 
-    /// <summary>
-    /// Identifies the X2 button.
-    /// </summary>
-    mmp_mouse_button_x2 = 0x0040
-} mmp_mouse_button;
+/// <summary>
+/// Identifies the middle mouse button.
+/// </summary>
+#define mmp_mouse_button_middle ((mmp_mouse_button) 0x10)
+
+/// <summary>
+/// Identifies the X1 button.
+/// </summary>
+#define mmp_mouse_button_x1 ((mmp_mouse_button) 0x20)
+
+/// <summary>
+/// Identifies the X2 button.
+/// </summary>
+#define mmp_mouse_button_x2 ((mmp_mouse_button) 0x40)
 
 #endif /* !defined(_MMP_MOUSE_BUTTON_H) */

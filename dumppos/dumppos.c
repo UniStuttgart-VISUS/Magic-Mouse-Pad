@@ -14,6 +14,23 @@
 
 
 /// <summary>
+/// This function is called when we receive a mouse click event.
+/// </summary>
+/// <param name="button"></param>
+/// <param name="down"></param>
+/// <param name="x"></param>
+/// <param name="y"></param>
+/// <param name="context"></param>
+static void on_mouse_button(_In_ const mmp_mouse_button button,
+        _In_ const bool down,
+        _In_ const int32_t x,
+        _In_ const int32_t y,
+        _In_opt_ void *context) {
+    const TCHAR *state = down ? _T("down") : _T("up");
+    _tprintf(_T("%02x %s at %d, %d\n"), button, state, x, y);
+}
+
+/// <summary>
 /// This function is called when we receive a position update from the magic
 /// mouse pad.
 /// </summary>
@@ -40,6 +57,7 @@ int _tmain(_In_ const int argc, _In_reads_(argc) const TCHAR **argv) {
 
     memset(&config, 0, sizeof(config));
     config.on_mouse_move = &on_mouse_move;
+    config.on_mouse_button = &on_mouse_button;
 
     if (argc > 0) {
         retval = mmp_configure_server(&config, argv[1]);

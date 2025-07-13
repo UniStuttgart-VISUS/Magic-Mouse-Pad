@@ -20,7 +20,6 @@
 #include "mmpcli.h"
 #include "mmpmsg.h"
 #include "mmpthreadname.h"
-#include "mmptrace.h"
 
 
 /*
@@ -555,6 +554,10 @@ void mmp_client::receive(void) {
 
         const auto id = ::ntohl(*as<mmp_msg_id>(buffer));
         switch (id) {
+            case mmp_msgid_mouse_button:
+                this->on_mouse_button(as<mmp_msg_mouse_button>(buffer));
+                break;
+
             case mmp_msgid_mouse_move:
                 this->on_mouse_move(as<mmp_msg_mouse_move>(buffer));
                 break;

@@ -9,6 +9,9 @@
 #pragma once
 
 #include <inttypes.h>
+#if !defined(__cplusplus)
+#include <stdbool.h>
+#endif /* !defined(__cplusplus) */
 #include <WinSock2.h>
 
 #include "mmpapi.h"

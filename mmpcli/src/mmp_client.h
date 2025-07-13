@@ -13,7 +13,8 @@
 #include <thread>
 #include <vector>
 
-#include <mmpmsg.h>
+#include "mmpmsg.h"
+#include "mmptrace.h"
 
 #include <wil/resource.h>
 
