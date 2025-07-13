@@ -19,7 +19,13 @@
 /// <summary>
 /// The type used to identify the message type.
 /// </summary>
-typedef int32_t mmp_msg_id;
+typedef uint32_t mmp_msg_id;
+
+
+/// <summary>
+/// The type used for sequence numbers.
+/// </summary>
+typedef uint32_t mmp_seq_no;
 
 
 #define mmp_msgid_discover ((mmp_msg_id) 0x00000001)
@@ -51,27 +57,22 @@ typedef struct MMPCLI_API mmp_msg_discover_t {
 /// </summary>
 typedef struct MMPCLI_API mmp_msg_announce_t {
     /// <summary>
-    /// The message ID, which must be in network-byte order on the wire..
+    /// The message ID, which must be in network-byte order on the wire.
     /// </summary>
     mmp_msg_id id;
 
     /// <summary>
-    /// The port the maging mouse pad is listening on. The receiver should use
-    /// address it got this message from, but if a port other than zero is 
-    /// specified here, it should switch the port to this value.
+    /// The sequence number of the server at the time when the announcement was
+    /// sent, in network-byte order.
     /// </summary>
-    /// <remarks>
-    /// The port is in network-byte order and can directly be copied into a
-    /// socket address.
-    /// </remarks>
-    uint16_t port;
+    mmp_seq_no sequence_number;
 
 #if defined(__cplusplus)
     /// <summary>
     /// Initialises a new instance.
     /// </summary>
     inline mmp_msg_announce_t(void) noexcept : id(::htonl(mmp_msgid_announce)),
-        port(0) { }
+        sequence_number(0) { }
 #endif /* defined(__cplusplus) */
 } mmp_msg_announce;
 
@@ -110,6 +111,12 @@ typedef struct MMPCLI_API mmp_msg_mouse_move_t {
     mmp_msg_id id;
 
     /// <summary>
+    /// The sequence number of the server, in network-byte order. Clients can
+    /// use this information to discard outdated messages.
+    /// </summary>
+    mmp_seq_no sequence_number;
+
+    /// <summary>
     /// The horizontal position in pixels, in network-byte order.
     /// </summary>
     int32_t x;
@@ -124,7 +131,7 @@ typedef struct MMPCLI_API mmp_msg_mouse_move_t {
     /// Initialises a new instance.
     /// </summary>
     inline mmp_msg_mouse_move_t(void) noexcept
-        : id(::htonl(mmp_msgid_mouse_move)), x(0), y(0) { }
+        : id(::htonl(mmp_msgid_mouse_move)), sequence_number(0), x(0), y(0) { }
 #endif /* defined(__cplusplus) */
 } mmp_msg_mouse_move;
 
@@ -140,6 +147,12 @@ typedef struct MMPCLI_API mmp_msg_mouse_button_t {
     /// The message ID, which must be in network-byte order on the wire.
     /// </summary>
     mmp_msg_id id;
+
+    /// <summary>
+    /// The sequence number of the server, in network-byte order. Clients can
+    /// use this information to discard outdated messages.
+    /// </summary>
+    mmp_seq_no sequence_number;
 
     /// <summary>
     /// Identifies the button that was pressed or released.
@@ -168,6 +181,7 @@ typedef struct MMPCLI_API mmp_msg_mouse_button_t {
     /// </summary>
     inline mmp_msg_mouse_button_t(void) noexcept
         : id(::htonl(mmp_msgid_mouse_button)),
+        sequence_number(0),
         button(mmp_mouse_button_none),
         down(false),
         x(0),

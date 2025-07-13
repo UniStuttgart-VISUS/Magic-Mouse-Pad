@@ -8,7 +8,7 @@
 
 #include "mmp_client.h"
 #include "mmpmsg.h"
-#include "trace.h"
+#include "mmptrace.h"
 
 
 /*
@@ -26,25 +26,21 @@ _Success_(return == 0) int mmp_connect(
         return ERROR_INVALID_PARAMETER;
     }
 
-    // Optionally performs discovery of the server address of the mouse pad.
-    RETURN_IF_WIN32_ERROR(mmp_client::discover(*configuration));
-
-    // The client will connect in its constructor. Note that we must catch here,
-    // because the constructor could fail with a socket error besides the
-    // potential out-of-memory scenario.
-    try {
-        MMP_TRACE(L"Allocating the magic mouse pad client context.");
-        *handle = new mmp_client(*configuration);
-        return 0;
-
-    } catch (std::bad_alloc&) {
+    MMP_TRACE(L"Allocating the magic mouse pad client context.");
+    if ((*handle = new (std::nothrow) mmp_client(*configuration)) == nullptr) {
         MMP_TRACE(L"Insufficient memory to allocate client context.");
         return ERROR_OUTOFMEMORY;
-
-    } catch (const std::exception& ex) {
-        MMP_TRACE("Failed to create client context: %hs", ex.what());
-        return ERROR_INVALID_PARAMETER;
     }
+
+    // Make sure that Winsock is initialised. The mmp_client will release it
+    // in its destructor.
+    RETURN_IF_WIN32_ERROR(::WSAStartup(MAKEWORD(2, 2), **handle));
+
+    // Optionally performs discovery of the server address of the mouse pad.
+    RETURN_IF_WIN32_ERROR((**handle).discover());
+
+    // Announce the client to the server and start the receiver thread.
+    return (**handle).start();
 }
 
 

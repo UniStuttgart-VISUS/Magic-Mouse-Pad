@@ -8,6 +8,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mmpmsg.h>
 #include <mutex>
 #include <stdexcept>
 #include <set>
@@ -52,7 +53,8 @@ public:
     /// <typeparam name="TMessage"></typeparam>
     /// <param name="message"></param>
     template<class TMessage>
-    inline void send(_In_ const TMessage& message) noexcept {
+    inline void send(_In_ TMessage& message) noexcept {
+        message.sequence_number = this->_sequence_number++;
         this->send(reinterpret_cast<const char *>(std::addressof(message)),
             static_cast<int>(sizeof(TMessage)));
     }
@@ -66,13 +68,18 @@ private:
 
     static std::uint16_t get_port(_In_ const sockaddr *src);
 
+    static void set_port(_In_ sockaddr *dst, _In_ const std::uint16_t port);
+
+    static std::wstring to_string(_In_ const sockaddr_storage& address);
+
     //sockaddr_storage address(_In_ const sockaddr_storage& peer);
 
-    void serve(_In_ const settings settings);
+    void serve(_In_ settings settings);
 
     std::set<client> _clients;
     std::mutex _lock;
     std::atomic<bool> _running;
+    std::atomic<mmp_seq_no> _sequence_number;
     wil::unique_socket _socket;
     std::thread _server;
     HWND _window;

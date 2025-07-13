@@ -4,12 +4,12 @@
 // </copyright>
 // <author>Christoph Müller</author>
 
+#include <conio.h>
 #include <mmpcli.h>
 #include <sal.h>
 #include <stdio.h>
 #include <string.h>
 #include <tchar.h>
-#include <WinSock2.h>
 #include <Windows.h>
 
 
@@ -37,13 +37,6 @@ int _tmain(_In_ const int argc, _In_reads_(argc) const TCHAR **argv) {
     mmp_configuration config;
     mmp_handle mouse_pad = NULL;
     int retval = 0;
-    WSADATA wsa_data;
-
-    retval = WSAStartup(MAKEWORD(2, 2), &wsa_data);
-    if (retval != 0) {
-        fprintf(stderr, "Failed to initialise Winsock: %d\n", retval);
-        return retval;
-    }
 
     memset(&config, 0, sizeof(config));
     config.on_mouse_move = &on_mouse_move;
@@ -62,7 +55,8 @@ int _tmain(_In_ const int argc, _In_reads_(argc) const TCHAR **argv) {
         return retval;
     }
 
-    Sleep(10000);
+    printf("Press any key to exit.\n");
+    _getch();
 
     mmp_disconnect(mouse_pad);
 

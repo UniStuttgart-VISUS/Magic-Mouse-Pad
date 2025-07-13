@@ -10,7 +10,7 @@
 #include <wil/result.h>
 
 #include "mmpendpoint.h"
-#include "trace.h"
+#include "mmptrace.h"
 
 
 /*

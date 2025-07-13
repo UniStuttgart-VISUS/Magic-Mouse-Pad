@@ -1,4 +1,4 @@
-﻿// <copyright file="trace.h" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="mmptrace.h" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -6,18 +6,17 @@
 
 #pragma once
 
+#if defined(__cplusplus)
 #include <cstdio>
 #include <vector>
 
-#if defined(_WIN32)
-#include <Windows.h>
-#endif /* defined(_WIN32) */
+#include "mmpapi.h"
 
 
 /// <summary>
 /// Implements a debug tracer for the library.
 /// </summary>
-class tracer final {
+class MMPCLI_API mmp_tracer final {
 
 public:
 
@@ -26,8 +25,8 @@ public:
     /// </summary>
     /// <param name="file">The file where the trace was written.</param>
     /// <param name="line">The line where the trace was written.</param>
-    inline tracer(_In_z_ const char *const file, _In_ int line) noexcept
-        : _file(file), _line(line) {}
+    inline mmp_tracer(_In_z_ const char *const file, _In_ int line) noexcept
+        : _file(file), _line(line) { }
 
     /// <summary>
     /// Outputs a formatted trace message to the debugger console.
@@ -53,13 +52,18 @@ private:
 
     const char *const _file;
     const int _line;
+
 };
 
-#include "trace.inl"
+#include "mmptrace.inl"
 
 
 #if (defined(_DEBUG) || defined(DEBUG))
-#define MMP_TRACE tracer(__FILE__, __LINE__)
-#else /* (defined(_DEBUG) || defined(DEBUG))*/
+#define MMP_TRACE mmp_tracer(__FILE__, __LINE__)
+#else /* (defined(_DEBUG) || defined(DEBUG)) */
 #define MMP_TRACE __noop
-#endif /* (defined(_DEBUG) || defined(DEBUG))*/
+#endif /* (defined(_DEBUG) || defined(DEBUG)) */
+
+#else /* defined(__cplusplus) */
+#define MMP_TRACE __noop
+#endif /* defined(__cplusplus) */

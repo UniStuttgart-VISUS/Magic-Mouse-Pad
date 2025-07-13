@@ -33,6 +33,14 @@ public:
     /// Gets the address the server should be bound to.
     /// </summary>
     /// <returns></returns>
+    inline sockaddr *address(void) noexcept {
+        return reinterpret_cast<sockaddr *>(&this->_address);
+    }
+
+    /// <summary>
+    /// Gets the address the server should be bound to.
+    /// </summary>
+    /// <returns></returns>
     inline const sockaddr *address(void) const noexcept {
         return reinterpret_cast<const sockaddr *>(&this->_address);
     }

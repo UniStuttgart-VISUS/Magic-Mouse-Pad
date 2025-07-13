@@ -20,34 +20,63 @@
 #include "mmpcli.h"
 #include "mmpmsg.h"
 #include "mmpthreadname.h"
-#include "trace.h"
+#include "mmptrace.h"
+
+
+/*
+ * mmp_client::mmp_client
+ */
+mmp_client::mmp_client(_In_ const mmp_configuration& config)
+    : _config(config),
+    _running(false),
+    _sequence_number(0),
+    _wsa_data({ 0 }) { }
+
+
+/*
+ * mmp_client::~mmp_client
+ */
+mmp_client::~mmp_client(void) noexcept {
+    MMP_TRACE(L"Stopping client receiver thread.");
+    this->_running.store(false, std::memory_order_release);
+    this->_socket.reset();
+
+    if (this->_receiver.joinable()) {
+        this->_receiver.join();
+    }
+
+    MMP_TRACE(L"Cleaning up Winsock.");
+    ::WSACleanup();
+}
 
 
 /*
  * mmp_client::discover
  */
-_Success_(return == 0) int mmp_client::discover(
-        _In_ mmp_configuration& config) {
+_Success_(return == 0) int mmp_client::discover(void) {
     std::int16_t port = 0;
 
-    switch (config.server.ss_family) {
+    switch (this->_config.server.ss_family) {
         case AF_INET: {
-            auto a = reinterpret_cast<sockaddr_in&>(config.server);
+            auto a = reinterpret_cast<sockaddr_in&>(this->_config.server);
             if (a.sin_addr.s_addr == INADDR_ANY) {
                 port = a.sin_port;
 
-            } else if (config.client.ss_family == 0) {
+            } else if (this->_config.client.ss_family == 0) {
                 MMP_TRACE(L"An IPv4 address was provided for the magic mouse "
                     L"pad, but none for the client. We therefore coerce the "
                     L"address families to be the same.");
-                ::memset(&config.client, 0, sizeof(config.client));
-                config.client.ss_family = config.server.ss_family;
+                ::memset(&this->_config.client, 0,
+                    sizeof(this->_config.client));
+                this->_config.client.ss_family = this->_config.server.ss_family;
                 return 0;
 
-            } else if (config.client.ss_family != config.server.ss_family) {
+            } else if (this->_config.client.ss_family
+                    != this->_config.server.ss_family) {
                 MMP_TRACE(L"An IPv4 (%d) address was provided for the magic "
                     L"mouse pad, but the client address family is %d.",
-                    config.server.ss_family, config.client.ss_family);
+                    this->_config.server.ss_family,
+                    this->_config.client.ss_family);
                 return WSAEAFNOSUPPORT;
 
             } else {
@@ -58,23 +87,26 @@ _Success_(return == 0) int mmp_client::discover(
             } break;
 
         case AF_INET6: {
-            auto a = reinterpret_cast<sockaddr_in6&>(config.server);
+            auto a = reinterpret_cast<sockaddr_in6&>(this->_config.server);
             if (::memcmp(&a.sin6_addr, &in6addr_any, sizeof(in6addr_any))
                     == 0) {
                 port = a.sin6_port;
 
-            } else if (config.client.ss_family == 0) {
+            } else if (this->_config.client.ss_family == 0) {
                 MMP_TRACE(L"An IPv6 address was provided for the magic mouse "
                     L"pad, but none for the client. We therefore coerce the "
                     L"address families to be the same.");
-                ::memset(&config.client, 0, sizeof(config.client));
-                config.client.ss_family = config.server.ss_family;
+                ::memset(&this->_config.client, 0,
+                    sizeof(this->_config.client));
+                this->_config.client.ss_family = this->_config.server.ss_family;
                 return 0;
 
-            } else if (config.client.ss_family != config.server.ss_family) {
+            } else if (this->_config.client.ss_family
+                    != this->_config.server.ss_family) {
                 MMP_TRACE(L"An IPv6 (%d) address was provided for the magic "
                     L"mouse pad, but the client address family is %d.",
-                    config.server.ss_family, config.client.ss_family);
+                    this->_config.server.ss_family,
+                    this->_config.client.ss_family);
                 return WSAEAFNOSUPPORT;
 
             } else {
@@ -86,11 +118,16 @@ _Success_(return == 0) int mmp_client::discover(
 
         default:
             MMP_TRACE(L"Either IPv4 or IPv6 must be specified as the address "
-                L"family, but %d was provided.", config.server.ss_family);
-            return ERROR_INVALID_PARAMETER;
+                L"family, but %d was provided.",
+                this->_config.server.ss_family);
+            return WSAEAFNOSUPPORT;
     }
 
-    assert(port != 0);
+    if (port == 0) {
+        MMP_TRACE(L"The port of the magic mouse pad is not specified, so we "
+            L"force the use of the default port %u.", mmp_default_port);
+        port = ::htons(mmp_default_port);
+    }
 
     // Get all possible bradcast addresses for the given port.
     std::vector<sockaddr_in> addresses;
@@ -116,11 +153,11 @@ _Success_(return == 0) int mmp_client::discover(
     }
 
     MMP_TRACE(L"Discovering magic mouse pad at port %d.", ::ntohs(port));
-    RETURN_IF_WIN32_ERROR(!bind(socket, config.client));
+    RETURN_IF_WIN32_ERROR(!bind(socket, this->_config.client));
 
     // Start a thread that receives the responses.
     std::atomic<bool> found(false);
-    std::thread([&found, &socket, &config](void) {
+    std::thread([&found, &socket, this](void) {
         ::mmp_set_thread_name(-1, "Magic mouse pad discovery");
         constexpr int cnt_buffer = (std::numeric_limits<std::uint16_t>::max)();
         std::vector<char> buffer(cnt_buffer);
@@ -139,7 +176,7 @@ _Success_(return == 0) int mmp_client::discover(
                     L"discovery receiver is leaving now.", ::WSAGetLastError());
                 return;
             }
-            if (len < sizeof(mmp_msg_discover)) {
+            if (len < sizeof(mmp_msg_announce)) {
                 MMP_TRACE(L"Received an invalid datagram.");
                 continue;
             }
@@ -149,17 +186,11 @@ _Success_(return == 0) int mmp_client::discover(
 
             if (id == mmp_msgid_announce) {
                 MMP_TRACE(L"Received a mouse pad announcement.");
-                config.server = peer;
-
-                auto announce = as<mmp_msg_announce>(buffer);
-                if (announce->port != 0) {
-                    assert(config.server.ss_family == AF_INET);
-                    auto& a = reinterpret_cast<sockaddr_in&>(config.server);
-                    MMP_TRACE(L"Using announced port %d instead of %d.",
-                        announce->port, a.sin_port);
-                    a.sin_port = announce->port;
-                }
-
+                this->_config.server = peer;
+                auto connect = as<mmp_msg_announce>(buffer);
+                this->_sequence_number.store(
+                    ::ntohl(connect->sequence_number),
+                    std::memory_order_release);
                 found.store(true, std::memory_order_release);
                 return;
             }
@@ -167,10 +198,10 @@ _Success_(return == 0) int mmp_client::discover(
     }).detach();
 
     // Compute the deadline until which we need to be ready.
-    const std::chrono::milliseconds rate_limit(config.rate_limit);
+    const std::chrono::milliseconds rate_limit(this->_config.rate_limit);
     auto deadline = std::chrono::system_clock::now();
-    if (config.timeout > 0) {
-        deadline += std::chrono::milliseconds(config.timeout);
+    if (this->_config.timeout > 0) {
+        deadline += std::chrono::milliseconds(this->_config.timeout);
     } else {
         deadline = (decltype(deadline)::max)();
     }
@@ -207,27 +238,61 @@ _Success_(return == 0) int mmp_client::discover(
 
 
 /*
- * mmp_client::mmp_client
+ * mmp_client::start
  */
-mmp_client::mmp_client(_In_ const mmp_configuration& config)
-        : _config(config),
-        _running(true),
-        _socket(make_socket(config)) {
-    MMP_TRACE(L"Client initialised, starting client receiver thread.");
-    this->_receiver = std::thread(&mmp_client::receive, this);
-}
-
-
-/*
- * mmp_client::~mmp_client
- */
-mmp_client::~mmp_client(void) noexcept {
-    MMP_TRACE(L"Stopping client receiver thread.");
-    this->_running.store(false, std::memory_order_release);
-    this->_socket.reset();
-    if (this->_receiver.joinable()) {
-        this->_receiver.join();
+_Success_(return == 0) int mmp_client::start(void) noexcept {
+    bool expected = false;
+    if (!this->_running.compare_exchange_strong(expected,
+            true,
+            std::memory_order_acquire,
+            std::memory_order_relaxed)) {
+        MMP_TRACE(L"The client is already running, so it cannot be started "
+            L"again.");
+        return ERROR_INVALID_OPERATION;
     }
+
+    switch (this->_config.client.ss_family) {
+        case AF_INET:
+        case AF_INET6:
+            break;
+
+        default:
+            MMP_TRACE(L"No supported client address family was specified, so "
+                "use the one of the server address %d.",
+                this->_config.server.ss_family);
+            this->_config.client.ss_family = this->_config.server.ss_family;
+            break;
+    }
+
+    MMP_TRACE(L"Creating socket of family %d.", this->_config.client.ss_family);
+    this->_socket.reset(::WSASocket(
+        this->_config.client.ss_family,
+        SOCK_DGRAM,
+        IPPROTO_UDP,
+        nullptr,
+        0,
+        WSA_FLAG_OVERLAPPED));
+    RETURN_LAST_ERROR_IF(!this->_socket);
+
+    MMP_TRACE(L"Binding receiver socket to configured address.");
+    RETURN_IF_WIN32_ERROR(bind(this->_socket, this->_config.client));
+
+    MMP_TRACE(L"Allocating kernel event for asynchronous I/O.");
+    RETURN_IF_FAILED(this->_event.create());
+
+    MMP_TRACE(L"Announcing client to Magic Mouse Pad.");
+    RETURN_IF_WIN32_ERROR(this->connect());
+
+    MMP_TRACE(L"Starting client receiver thread.");
+    try {
+        this->_receiver = std::thread(&mmp_client::receive, this);
+    } catch (std::system_error ex) {
+        MMP_TRACE(L"Failed to start the client receiver thread: %hs",
+            ex.what());
+        return ex.code().value();
+    }
+
+    return 0;
 }
 
 
@@ -319,7 +384,7 @@ int mmp_client::bind(_In_ wil::unique_socket& socket,
             RETURN_LAST_ERROR_IF(::bind(socket.get(),
                 reinterpret_cast<const sockaddr *>(&address),
                 sizeof(sockaddr_in)) == SOCKET_ERROR);
-            return 0;
+            break;
 
         case AF_INET6:
             MMP_TRACE(L"Binding to IPv6 address on port %u.", ::ntohs(
@@ -327,58 +392,49 @@ int mmp_client::bind(_In_ wil::unique_socket& socket,
             RETURN_LAST_ERROR_IF(::bind(socket.get(),
                 reinterpret_cast<const sockaddr *>(&address),
                 sizeof(sockaddr_in6)) == SOCKET_ERROR);
-            return 0;
+            break;
 
         default:
             MMP_TRACE(L"Incompatible address family %d.", address.ss_family);
             return WSAEAFNOSUPPORT;
     }
-}
 
+#if (defined(_DEBUG) || defined(DEBUG))
+    {
+        sockaddr_storage addr{ 0 };
+        int cnt_addr = sizeof(addr);
+        ::getsockname(socket.get(),
+            reinterpret_cast<sockaddr *>(&addr),
+            &cnt_addr);
+        switch (addr.ss_family) {
+            case AF_INET:
+                MMP_TRACE(L"IPv4 socket bound to port %u.", ::ntohs(
+                    reinterpret_cast<const sockaddr_in&>(addr).sin_port));
+                break;
 
-/*
- * mmp_client::make_socket
- */
-wil::unique_socket mmp_client::make_socket(
-        _In_ const mmp_configuration& config) {
-    auto address_family = config.client.ss_family;
-    switch (address_family) {
-        case AF_INET:
-        case AF_INET6:
-            break;
-
-        default:
-            MMP_TRACE(L"No valid client address family was specified, so use "
-                L"the one of the server address.");
-            address_family = config.server.ss_family;
-            break;
+            case AF_INET6:
+                MMP_TRACE(L"IPv6 socket bound to port %u.", ::ntohs(
+                    reinterpret_cast<const sockaddr_in6&>(addr).sin6_port));
+                break;
+        }
     }
+#endif /* (defined(_DEBUG) || defined(DEBUG)) */
 
-    MMP_TRACE(L"Creating socket of family %d.", address_family);
-    wil::unique_socket retval(::WSASocket(
-        address_family,
-        SOCK_DGRAM,
-        IPPROTO_UDP,
-        nullptr,
-        0,
-        WSA_FLAG_OVERLAPPED));
-    THROW_LAST_ERROR_IF(!retval);
-    return retval;
+    return 0;
 }
 
 
 /*
- * mmp_client::announce
+ * mmp_client::connect
  */
-int mmp_client::announce(void) {
-    MMP_TRACE("Announcing client to server.");
+int mmp_client::connect(void) {
     const auto server_addr = reinterpret_cast<const sockaddr *>(
         std::addressof(this->_config.server));
     const auto server_addr_len = static_cast<int>(
         sizeof(sockaddr_storage));
 
-    mmp_msg_announce msg;
-    msg.port = 0;
+    mmp_msg_connect msg;
+    assert(msg.id == ::ntohl(mmp_msgid_connect));
 
     if (::sendto(this->_socket.get(),
             reinterpret_cast<const char *>(&msg),
@@ -401,11 +457,13 @@ int mmp_client::announce(void) {
  */
 void mmp_client::on_mouse_button(_In_ const mmp_msg_mouse_button *msg) {
     assert(msg != nullptr);
-    assert(msg->id == mmp_msgid_mouse_button);
-    if (this->_config.on_mouse_button != nullptr) {
-        auto p = this->xform_position(msg);
-        this->_config.on_mouse_button(msg->button, msg->down, p.first,
-            p.second, this->_config.context);
+    assert(msg->id == ::htonl(mmp_msgid_mouse_button));
+    if (this->track_sequence_number(msg)) {
+        if (this->_config.on_mouse_button != nullptr) {
+            auto p = this->xform_position(msg);
+            this->_config.on_mouse_button(msg->button, msg->down, p.first,
+                p.second, this->_config.context);
+        }
     }
 }
 
@@ -415,10 +473,13 @@ void mmp_client::on_mouse_button(_In_ const mmp_msg_mouse_button *msg) {
  */
 void mmp_client::on_mouse_move(_In_ const mmp_msg_mouse_move *msg) {
     assert(msg != nullptr);
-    assert(msg->id == mmp_msgid_mouse_move);
-    if (this->_config.on_mouse_move != nullptr) {
-        auto p = this->xform_position(msg);
-        this->_config.on_mouse_move(p.first, p.second, this->_config.context);
+    assert(msg->id == ::htonl(mmp_msgid_mouse_move));
+    if (this->track_sequence_number(msg)) {
+        if (this->_config.on_mouse_move != nullptr) {
+            auto p = this->xform_position(msg);
+            this->_config.on_mouse_move(p.first, p.second,
+                this->_config.context);
+        }
     }
 }
 
@@ -444,56 +505,18 @@ void mmp_client::receive(void) {
     }
     auto wsa_cleanup = wil::scope_exit([](void) { ::WSACleanup(); });
 
-    if (bind(this->_socket, this->_config.client) != 0) {
-        MMP_TRACE(L"Failed to bind receiver socket.");
-        return;
-    }
-
-#if (defined(_DEBUG) || defined(DEBUG))
-    {
-        sockaddr_storage addr { 0 };
-        int cnt_addr = sizeof(addr);
-        ::getsockname(this->_socket.get(),
-            reinterpret_cast<sockaddr *>(&addr),
-            &cnt_addr);
-        switch (addr.ss_family) {
-            case AF_INET:
-                MMP_TRACE(L"Receiver bound to port %u.", ::ntohs(
-                    reinterpret_cast<const sockaddr_in&>(addr).sin_port));
-                break;
-
-            case AF_INET6:
-                MMP_TRACE(L"Receiver bound to port %u.", ::ntohs(
-                    reinterpret_cast<const sockaddr_in6&>(addr).sin6_port));
-                break;
-        }
-    }
-#endif /* (defined(_DEBUG) || defined(DEBUG)) */
-
-    if (this->announce() != 0) {
-        MMP_TRACE(L"Failed to announce client to server, so the receiver "
-            L"thread is leaving now.");
-        return;
-    }
-
     MMP_TRACE(L"Entering the receive loop.");
     while (this->_running.load(std::memory_order_acquire)) {
         sockaddr_storage peer;
-        int cnt_peer = sizeof(peer);
+        DWORD len = 0;
 
-        auto len = ::recvfrom(this->_socket.get(),
-            buffer.data(),
-            cnt_buffer,
-            0,
-            reinterpret_cast<sockaddr *>(&peer),
-            &cnt_peer);
-        if (len == SOCKET_ERROR) {
-            MMP_TRACE(L"The receive failed with error %d, so the receiver "
-                L"thread is leaving now.", ::WSAGetLastError());
+        if (!this->receive_from(buffer, len, peer)) {
+            MMP_TRACE(L"The receiver thread is leaving because receiving a "
+                L"datagram failed.");
             return;
         }
         if (len < sizeof(mmp_msg_id)) {
-            MMP_TRACE(L"Received an invalid datagram.");
+            MMP_TRACE(L"Received an invalid datagram, which will be ignored.");
             continue;
         }
 
@@ -504,4 +527,47 @@ void mmp_client::receive(void) {
                 break;
         }
     }
+}
+
+
+/*
+ * mmp_client::receive_from
+ */
+_Success_(return == true) bool mmp_client::receive_from(
+        _In_ std::vector<char>& buffer,
+        _Out_ DWORD& size,
+        _Out_ sockaddr_storage& peer) {
+    WSABUF buf;
+    OVERLAPPED overlapped = { 0 };
+    DWORD flags = 0;
+    INT peer_len = sizeof(peer);
+
+    buf.buf = buffer.data();
+    buf.len = static_cast<ULONG>(buffer.size());
+
+    overlapped.hEvent = this->_event.get();
+
+    if (::WSARecvFrom(this->_socket.get(),
+            &buf, 1,
+            &size,
+            &flags,
+            reinterpret_cast<sockaddr *>(&peer),
+            &peer_len,
+            &overlapped,
+            nullptr) == 0) {
+        return true;
+    }
+
+    auto error = ::WSAGetLastError();
+    if (error == WSA_IO_PENDING) {
+        if (::WaitForSingleObject(overlapped.hEvent, INFINITE)
+                == WAIT_OBJECT_0) {
+            return true;
+        }
+
+        error = ::WSAGetLastError();
+    }
+
+    MMP_TRACE(L"Receiving a datagram failed with error %d.", error);
+    return false;
 }

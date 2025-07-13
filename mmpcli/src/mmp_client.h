@@ -25,14 +25,6 @@ struct mmp_client final {
 public:
 
     /// <summary>
-    /// If no specific IP address is specified in the given
-    /// <see cref="mmp_configuration"/>.
-    /// </summary>
-    /// <param name="config"></param>
-    /// <returns></returns>
-    static _Success_(return == 0) int discover(_In_ mmp_configuration& config);
-
-    /// <summary>
     /// Initialises a new instance.
     /// </summary>
     /// <param name="config">The configuration of the client. The object will
@@ -43,6 +35,34 @@ public:
     /// Finalises the instance.
     /// </summary>
     ~mmp_client(void) noexcept;
+
+    /// <summary>
+    /// If no specific IP address is specified in the
+    /// <see cref="mmp_configuration"/> of the client, try to discover the magic
+    /// mouse pad using UDP broadcast messages.
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    _Success_(return == 0) int discover(void);
+
+    /// <summary>
+    /// Announces the client to the configured server and starts the receiver
+    /// thread.
+    /// </summary>
+    /// <returns>Zero in case of success, a system error code otherwise.
+    /// </returns>
+    _Success_(return == 0) int start(void) noexcept;
+
+#if defined(_WIN32)
+    /// <summary>
+    /// Answer the Winsock initialisation data used by the client. The caller
+    /// must initialise Winsock using this structure before calling any other
+    /// method that might use sockets.
+    /// </summary>
+    _Ret_valid_ operator WSADATA *(void) noexcept {
+        return std::addressof(this->_wsa_data);
+    }
+#endif /* defined(_WIN32) */
 
 private:
 
@@ -81,25 +101,16 @@ private:
         _In_ sockaddr_storage& address);
 
     /// <summary>
-    /// Creates a new datagram socket.
-    /// </summary>
-    /// <param name="config">The configuration for which the socket should be
-    /// used.</param>
-    /// <returns></returns>
-    static wil::unique_socket make_socket(_In_ const mmp_configuration& config);
-
-    /// <summary>
     /// Sends an announcement message to the mouse pad server in order to
     /// receive updates from it.
     /// </summary>
     /// <returns>Zero in case of success, a system error code otherwise.
     /// </returns>
-    int announce(void);
+    int connect(void);
 
     /// <summary>
     /// Processes a button press or release message.
     /// </summary>
-    /// <param name=""></param>
     void on_mouse_button(_In_ const mmp_msg_mouse_button *msg);
 
     /// <summary>
@@ -113,6 +124,23 @@ private:
     void receive(void);
 
     /// <summary>
+    /// Receives a datagram into <paramref name="buffer"/>.
+    /// </summary>
+    _Success_(return == true) bool receive_from(_In_ std::vector<char>& buffer,
+        _Out_ DWORD&size, _Out_ sockaddr_storage& peer);
+
+    /// <summary>
+    /// Tracks whether the sequence number in the given
+    /// <paramref name="message"/> is not from the past and updates the current
+    /// state.
+    /// </summary>
+    /// <typeparam name="TMessage"></typeparam>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    template<class TMessage>
+    bool track_sequence_number(_In_ const TMessage *message);
+
+    /// <summary>
     /// Transforms the position in the given <paramref name="message"/>
     /// according to the rules specified in <see cref="_config"/>.
     /// </summary>
@@ -124,9 +152,13 @@ private:
         _In_ const TMessage *message);
 
     mmp_configuration _config;
+    wil::unique_event_nothrow _event;
     std::thread _receiver;
     std::atomic<bool> _running;
+    std::atomic<mmp_seq_no> _sequence_number;
     wil::unique_socket _socket;
+    WSADATA _wsa_data;
+
 };
 
 #include "mmp_client.inl"

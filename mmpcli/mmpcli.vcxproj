@@ -36,14 +36,14 @@
     <ClInclude Include="include\mmp_configuration.h" />
     <ClInclude Include="include\mmp_key.h" />
     <ClInclude Include="include\mmp_mouse_button.h" />
+    <ClInclude Include="include\mmptrace.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\mmp_client.h" />
-    <ClInclude Include="src\trace.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="include\mmptrace.inl" />
     <None Include="packages.config" />
     <None Include="src\mmp_client.inl" />
-    <None Include="src\trace.inl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="mmpcli.rc" />

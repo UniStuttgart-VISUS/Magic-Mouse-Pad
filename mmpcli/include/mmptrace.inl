@@ -1,4 +1,4 @@
-﻿// <copyright file="trace.inl" company="Visualisierungsinstitut der Universität Stuttgart">
+﻿// <copyright file="mmptrace.inl" company="Visualisierungsinstitut der Universität Stuttgart">
 // Copyright © 2025 Visualisierungsinstitut der Universität Stuttgart.
 // Licensed under the MIT licence. See LICENCE file for details.
 // </copyright>
@@ -9,7 +9,7 @@
  * tracer::operator ()
  */
 template<class... TArguments>
-void tracer::operator ()(_In_z_ const char *const format,
+void mmp_tracer::operator ()(_In_z_ const char *const format,
         TArguments&&... arguments) noexcept {
     constexpr const char *const prefix = "[0x%08x, %s:%d] ";
     const auto tid = ::GetCurrentThreadId();
@@ -47,7 +47,7 @@ void tracer::operator ()(_In_z_ const char *const format,
  * tracer::operator ()
  */
 template<class... TArguments>
-void tracer::operator ()(_In_z_ const wchar_t *const format,
+void mmp_tracer::operator ()(_In_z_ const wchar_t *const format,
         TArguments&&... arguments) noexcept {
     constexpr const wchar_t *const prefix = L"[0x%08x, %hs:%d] ";
     const auto tid = ::GetCurrentThreadId();

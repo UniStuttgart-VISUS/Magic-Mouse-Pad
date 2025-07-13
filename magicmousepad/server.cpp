@@ -9,17 +9,19 @@
 #include <array>
 #include <limits>
 
-#include <mmpmsg.h>
+#include <mmp_configuration.h>
 #include <mmpthreadname.h>
 #include <iphlpapi.h>
 #include <Windows.h>
+
+#include "mmptrace.h"
 
 
 /*
  * server::server
  */
 server::server(_In_ const settings& settings, _In_opt_ HWND window)
-        : _running(true), _window(window) {
+        : _running(true), _sequence_number(0), _window(window) {
     this->_server = std::thread(&server::serve, this, settings);
 }
 
@@ -123,17 +125,9 @@ std::vector<sockaddr_storage> server::addresses(void) {
  */
 void server::copy_port(_In_ sockaddr_storage& dst,
         _In_ const sockaddr *src) {
-    switch (dst.ss_family) {
-        case AF_INET: {
-            auto&a = reinterpret_cast<sockaddr_in&>(dst);
-            a.sin_port = get_port(src);
-            } break;
-
-        case AF_INET6: {
-            auto& a = reinterpret_cast<sockaddr_in6&>(dst);
-            a.sin6_port = get_port(src);
-            } break;
-    }
+    auto d = reinterpret_cast<sockaddr *>(&dst);
+    auto p = get_port(src);
+    set_port(d, p);
 }
 
 
@@ -143,20 +137,80 @@ void server::copy_port(_In_ sockaddr_storage& dst,
 std::uint16_t server::get_port(_In_ const sockaddr *src) {
     assert(src != nullptr);
 
-        switch (src->sa_family) {
+    switch (src->sa_family) {
         case AF_INET: {
             auto a = reinterpret_cast<const sockaddr_in *>(src);
-            return a->sin_port;
+            return ::ntohs(a->sin_port);
             } break;
 
         case AF_INET6: {
             auto a = reinterpret_cast<const sockaddr_in6 *>(src);
-            return a->sin6_port;
+            return ::ntohs(a->sin6_port);
             } break;
 
         default:
             return 0;
     }
+}
+
+
+/*
+ * server::set_port
+ */
+void server::set_port(_In_ sockaddr *dst, _In_ const std::uint16_t port) {
+    assert(dst != nullptr);
+
+    switch (dst->sa_family) {
+        case AF_INET: {
+            auto a = reinterpret_cast<sockaddr_in *>(dst);
+            a->sin_port = ::htons(port);
+            } break;
+
+        case AF_INET6: {
+            auto a = reinterpret_cast<sockaddr_in6 *>(dst);
+            a->sin6_port = ::htons(port);
+            } break;
+
+        default:
+            assert(false);
+            break;
+    }
+}
+
+
+/*
+ * server::to_string
+ */
+std::wstring server::to_string(_In_ const sockaddr_storage& address) {
+    std::wstring retval(INET6_ADDRSTRLEN, L'\0');
+
+    switch (address.ss_family) {
+        case AF_INET: {
+            auto& a = reinterpret_cast<const sockaddr_in&>(address);
+            if (::InetNtopW(address.ss_family,
+                    &a.sin_addr,
+                    &retval[0],
+                    retval.size())
+                    != nullptr) {
+                auto p = ::ntohs(a.sin_port);
+                retval.resize(::wcslen(retval.c_str()));
+                retval += L":" + std::to_wstring(p);
+            } break;
+        }
+        case AF_INET6: {
+            auto& a = reinterpret_cast<const sockaddr_in6&>(address);
+            if (::InetNtopW(address.ss_family,
+                    &a.sin6_addr,
+                    &retval[0],
+                    retval.size())
+                    != nullptr) {
+                auto p = ::ntohs(a.sin6_port);
+                retval.resize(::wcslen(retval.c_str()));
+                retval += L":" + std::to_wstring(p);
+            } break;
+        }
+    }
+    return retval;
 }
 
 
@@ -228,8 +282,9 @@ std::uint16_t server::get_port(_In_ const sockaddr *src) {
 /*
  * server::serve
  */
-void server::serve(_In_ const settings settings) {
+void server::serve(_In_ settings settings) {
     mmp_set_thread_name(-1, "Magic mouse pad receiver");
+    MMP_TRACE(L"The server thread 0x%08x started.", ::GetCurrentThreadId());
 
     try {
         std::array<char, (std::numeric_limits<std::uint16_t>::max)()> buffer;
@@ -237,11 +292,9 @@ void server::serve(_In_ const settings settings) {
         int cnt_peer = sizeof(peer);
         WSADATA wsa_data;
 
-        {
-            DWORD status = ::WSAStartup(MAKEWORD(2, 2), &wsa_data);
-            THROW_WIN32_IF(status, status != NO_ERROR);
-        }
-
+        MMP_TRACE(L"Initialising Winsock in thread 0x08x.",
+            ::GetCurrentThreadId());
+        THROW_IF_WIN32_ERROR(::WSAStartup(MAKEWORD(2, 2), &wsa_data));
         auto wsa_cleanup = wil::scope_exit([](void) { ::WSACleanup(); });
 
         // Create a datagram socket using the configured address.
@@ -256,10 +309,41 @@ void server::serve(_In_ const settings settings) {
 
         // Bind the socket to the configured port such that it can wait for
         // incoming connections and discovery requests.
+        switch (settings.address()->sa_family) {
+            case AF_INET:
+            case AF_INET6:
+                break;
+
+            default:
+                MMP_TRACE(L"Coercing unsupported address family %d to IPv4.",
+                    settings.address()->sa_family);
+                settings.address()->sa_family = AF_INET;
+                break;
+        }
+
+        if (get_port(settings.address()) == 0) {
+            MMP_TRACE(L"Falling back to the default port %u as the server "
+                L"cannot be discovered when using an emphemeral port.",
+                mmp_default_port);
+            set_port(settings.address(), mmp_default_port);
+        }
+
         THROW_LAST_ERROR_IF(::bind(this->_socket.get(),
             settings.address(),
             settings.address_length())
             == SOCKET_ERROR);
+
+#if (defined(_DEBUG) || defined(DEBUG))
+        {
+            sockaddr_storage addr { 0 };
+            int cnt_addr = sizeof(addr);
+            ::getsockname(this->_socket.get(),
+                reinterpret_cast<sockaddr *>(&addr),
+                &cnt_addr);
+            auto name = server::to_string(addr);
+            MMP_TRACE(L"Server bound to %s.", name.c_str());
+        }
+#endif /* (defined(_DEBUG) || defined(DEBUG)) */
 
         while (this->_running.load(std::memory_order_acquire)) {
             auto cnt = ::recvfrom(this->_socket.get(),
@@ -281,8 +365,10 @@ void server::serve(_In_ const settings settings) {
                     // address back to the requestor. If the server has multiple
                     // addresses, it sends the one that is in the same subnet as
                     // the requestor.
+                    MMP_TRACE(L"Responding to discovery request.");
                     mmp_msg_announce response;
-                    response.port = server::get_port(settings.address());
+                    response.sequence_number = this->_sequence_number.load(
+                        std::memory_order_acquire);
                     ::sendto(this->_socket.get(),
                         reinterpret_cast<const char *>(&response),
                         sizeof(response),
@@ -294,6 +380,7 @@ void server::serve(_In_ const settings settings) {
                 case mmp_msgid_connect: {
                     // In case of a connect request, we register the peer
                     // address as a client.
+                    MMP_TRACE(L"Adding new client.");
                     std::lock_guard<std::mutex> l(this->_lock);
                     this->_clients.emplace(peer);
                     ::SendMessage(this->_window, WM_PAINT, 0, 0);

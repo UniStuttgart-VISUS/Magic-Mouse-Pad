@@ -15,7 +15,7 @@
 #include <wil/result.h>
 #include <wil/resource.h>
 
-#include "trace.h"
+#include "mmptrace.h"
 
 
 /*

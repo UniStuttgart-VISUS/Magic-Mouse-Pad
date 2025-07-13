@@ -14,6 +14,7 @@
  */
 settings::settings(void) noexcept : _height(0), _width(0) {
     ::memset(&this->_address, 0, sizeof(this->_address));
+    this->_address.ss_family = AF_INET;
 }
 
 

@@ -53,9 +53,6 @@
     <ClInclude Include="src\mmp_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\mmp_mouse_button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -71,13 +68,16 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\mmptrace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="src\trace.inl">
+    <None Include="src\mmp_client.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="src\mmp_client.inl">
+    <None Include="include\mmptrace.inl">
       <Filter>Header Files</Filter>
     </None>
   </ItemGroup>

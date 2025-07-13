@@ -34,6 +34,21 @@
 /// </summary>
 #define mmp_flag_local ((uint32_t) 0x00000002)
 
+/// <summary>
+/// If this flag is set in the <see cref="mmp_configuration"/>, the client will
+/// hide the cursor when it is not visible on the local desktop.
+/// </summary>
+#define mmp_flag_hide_remote ((uint32_t) 0x00000004)
+
+
+/// <summary>
+/// The default port number to be used for the magic mouse pad.
+/// </summary>
+/// <remarks>
+/// The port number is in host-byte order.
+/// </remarks>
+#define mmp_default_port ((uint16_t) 14753)
+
 
 /// <summary>
 /// Configures a magic mouse pad client.

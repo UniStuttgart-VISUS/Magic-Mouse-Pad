@@ -6,6 +6,19 @@
 
 
 /*
+ * mmp_client::track_sequence_number
+ */
+template<class TMessage>
+bool mmp_client::track_sequence_number(_In_ const TMessage *message) {
+    assert(message != nullptr);
+    const auto s = ::ntohl(message->sequence_number);
+    auto e = this->_sequence_number.load(std::memory_order_acquire);
+    return (s > e) && this->_sequence_number.compare_exchange_strong(
+        e, s, std::memory_order_release, std::memory_order_relaxed);
+}
+
+
+/*
  * mmp_client::xform_position
  */
 template<class TMessage>
