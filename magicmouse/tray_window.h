@@ -88,7 +88,7 @@ private:
     /// <param name="y"></param>
     /// <param name="context"></param>
     /// <returns></returns>
-    static void CALLBACK on_mouse_button(
+    static void WINAPIV on_mouse_button(
         _In_ const mmp_mouse_button button,
         _In_ const bool down,
         _In_ const int32_t x,
@@ -102,7 +102,7 @@ private:
     /// <param name="y"></param>
     /// <param name="context"></param>
     /// <returns></returns>
-    static void CALLBACK on_mouse_move(
+    static void WINAPIV on_mouse_move(
         _In_ const int32_t x,
         _In_ const int32_t y,
         _In_opt_ void *context) noexcept;
