@@ -99,14 +99,14 @@ typedef struct MMPCLI_API mmp_configuration_t {
     /// <summary>
     /// The callback that is invoked when a mouse button is pressed or released.
     /// </summary>
-    void (CALLBACK *on_mouse_button)(_In_ const mmp_mouse_button,
+    void (WINAPIV *on_mouse_button)(_In_ const mmp_mouse_button,
         _In_ const bool, _In_ const int32_t, _In_ const int32_t,
         _In_opt_ void *);
 
     /// <summary>
     /// The callback that is invoked when the mouse is moved.
     /// </summary>
-    void (CALLBACK *on_mouse_move)(_In_ const int32_t, _In_ const int32_t,
+    void (WINAPIV *on_mouse_move)(_In_ const int32_t, _In_ const int32_t,
         _In_opt_ void *);
 
     /// <summary>
