@@ -8,7 +8,7 @@
 #define _MMP_MOUSE_BUTTON_H
 #pragma once
 
-#include <inttypes.h>   
+#include <inttypes.h>
 
 
 /// <summary>

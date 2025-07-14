@@ -250,6 +250,14 @@ _Success_(return == 0) int mmp_client::start(void) noexcept {
         return ERROR_INVALID_OPERATION;
     }
 
+    try {
+        this->_reordering_buffer.resize(this->_config.reordering_buffer);
+    } catch (std::bad_alloc) {
+        MMP_TRACE(L"Insufficient memory to allocate a reordering buffer "
+            L"for %u elements.", this->_config.reordering_buffer);
+        return ERROR_OUTOFMEMORY;
+    }
+
     switch (this->_config.client.ss_family) {
         case AF_INET:
         case AF_INET6:
@@ -413,6 +421,38 @@ int mmp_client::bind(_In_ wil::unique_socket& socket,
     return 0;
 }
 
+
+/*
+ * mmp_client::clip
+ */
+bool mmp_client::clip(_Inout_ std::int32_t& x,
+        _Inout_ std::int32_t& y,
+        _In_ const std::uint32_t width,
+        _In_ const std::uint32_t height) noexcept {
+    const auto h = static_cast<int32_t>(height);
+    const auto w = static_cast<int32_t>(width);
+    auto retval = false;
+
+    if (x < 0) {
+        x = 0;
+        retval = true;
+    } else if (x > w) {
+        x = w;
+        retval = true;
+    }
+
+    if (y < 0) {
+        y = 0;
+        retval = false;
+    } else if (y > h) {
+        y = h;
+        retval = true;
+    }
+
+    return retval;
+}
+
+
 /*
  * mmp_client::to_string
  */
@@ -521,7 +561,7 @@ void mmp_client::receive(void) {
     ::mmp_set_thread_name(-1, "Magic mouse pad receiver");
 
     constexpr int cnt_buffer = (std::numeric_limits<std::uint16_t>::max)();
-    std::vector<char> buffer(cnt_buffer);
+    buffer_type buffer(cnt_buffer);
     WSADATA wsa_data;
 
     MMP_TRACE(L"The client receiver thread 0x%08x is running. Initialising "

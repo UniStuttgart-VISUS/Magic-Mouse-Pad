@@ -39,7 +39,8 @@
 
 /// <summary>
 /// If this flag is set in the <see cref="mmp_configuration"/>, the client will
-/// hide the cursor when it is not visible on the local desktop.
+/// hide the cursor when it is not visible on the local desktop. This flag has
+/// no effect unless <see cref="mmp_flag_local"/> is also set.
 /// </summary>
 #define mmp_flag_hide_remote ((uint32_t) 0x00000004)
 
@@ -116,6 +117,17 @@ typedef struct MMPCLI_API mmp_configuration_t {
     uint32_t rate_limit;
 
     /// <summary>
+    /// The number of messages that can be buffered by the client for fixing
+    /// out-of-order messages before discarding them. If this value is zero,
+    /// only in-order messages are accepted and all out-of-order messages are
+    /// discarded.
+    /// </summary>
+    /// <remarks>
+    /// This value is currently not honoured, but reserved for future use.
+    /// </remarks>
+    uint32_t reordering_buffer;
+
+    /// <summary>
     /// The address of the magic mouse pad to connect to. If the address itself
     /// is the any address, the client will attempt to discover the mouse pad
     /// instance via the port specified in the address.
@@ -162,6 +174,7 @@ typedef struct MMPCLI_API mmp_configuration_t {
         on_mouse_button(nullptr),
         on_mouse_move(nullptr),
         rate_limit(0),
+        reordering_buffer(0),
         timeout(0),
         server({ 0 }),
         start_x(0),

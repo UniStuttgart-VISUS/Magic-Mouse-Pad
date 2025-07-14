@@ -58,6 +58,7 @@ int _tmain(_In_ const int argc, _In_reads_(argc) const TCHAR **argv) {
     memset(&config, 0, sizeof(config));
     config.on_mouse_move = &on_mouse_move;
     config.on_mouse_button = &on_mouse_button;
+    config.flags = mmp_flag_clip | mmp_flag_local;
 
     if (argc > 0) {
         retval = mmp_configure_server(&config, argv[1]);

@@ -69,6 +69,11 @@ public:
 private:
 
     /// <summary>
+    /// The type used for receiving messages.
+    /// </summary>
+    typedef std::vector<char> buffer_type;
+
+    /// <summary>
     /// Answer the contents of <paramref name="buffer"/> as a pointer to the
     /// specified <typeparamref name="TType"/>.
     /// </summary>
@@ -101,6 +106,23 @@ private:
     /// </returns>
     static int bind(_In_ wil::unique_socket& socket,
         _In_ sockaddr_storage& address);
+
+    /// <summary>
+    /// Tests whether the given position <paramref name="x"/> and
+    /// <paramref name="y"/> is within the given bounds and if not, clips it
+    /// to the <paramref name="width"/> and <paramref name="height"/>.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <returns><see langword="true" /> if the position was clipped,
+    /// <see langword="false" /> if it was already in the specified range.
+    /// </returns>
+    static bool clip(_Inout_ std::int32_t& x,
+        _Inout_ std::int32_t& y,
+        _In_ const std::uint32_t width,
+        _In_ const std::uint32_t height) noexcept;
 
     /// <summary>
     /// Convert the given socket <paramref name="address"/> into a
@@ -164,6 +186,7 @@ private:
     mmp_configuration _config;
     wil::unique_event_nothrow _event;
     std::thread _receiver;
+    std::vector<buffer_type> _reordering_buffer;
     std::atomic<bool> _running;
     std::atomic<mmp_seq_no> _sequence_number;
     wil::unique_socket _socket;
