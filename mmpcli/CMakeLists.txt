@@ -59,7 +59,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${SourceDirectory}>)
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE WIL)
+    target_link_libraries(${PROJECT_NAME} PRIVATE WIL Ws2_32.lib iphlpapi.lib)
 endif ()
 
 
