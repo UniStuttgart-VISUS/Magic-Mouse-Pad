@@ -21,11 +21,11 @@ _Success_(return == 0) int mmp_configure_client4(
         _In_ const struct sockaddr_in *client) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (client == nullptr) {
         MMP_TRACE("The client address is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     ::memcpy(&configuration->client, client, sizeof(*client));
@@ -45,11 +45,11 @@ _Success_(return == 0) int mmp_configure_client6(
         _In_ const struct sockaddr_in6 *client) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (client == nullptr) {
         MMP_TRACE("The client address is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     ::memcpy(&configuration->client, client, sizeof(*client));
@@ -71,11 +71,11 @@ _Success_(return == 0) int mmp_configure_discovery(
         _In_ const uint32_t rate_limit) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (port == 0) {
         MMP_TRACE("The port for the discovery is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     configuration->timeout = timeout;
@@ -98,11 +98,11 @@ _Success_(return == 0) int mmp_configure_from_registry_key(
         _In_ HKEY key) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (key == NULL) {
         MMP_TRACE("The registry key provided is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     const auto get_int = [key](LPCWSTR name, int32_t& dst) {
@@ -151,11 +151,11 @@ _Success_(return == 0) int mmp_configure_server4(
         _In_ const struct sockaddr_in *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (server == nullptr) {
         MMP_TRACE("The server address is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     ::memcpy(&configuration->server, server, sizeof(*server));
@@ -175,11 +175,11 @@ _Success_(return == 0) int mmp_configure_server6(
         _In_ const struct sockaddr_in6 *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (server == nullptr) {
         MMP_TRACE("The server address is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
 
     ::memcpy(&configuration->server, server, sizeof(*server));
@@ -199,7 +199,7 @@ _Success_(return == 0) int mmp_configure_servera(
         _In_z_ const char *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     return ::mmp_parse_end_pointa(&configuration->server, server);
 }
@@ -213,7 +213,7 @@ _Success_(return == 0) int mmp_configure_serverw(
         _In_z_ const wchar_t *server) {
     if (configuration == nullptr) {
         MMP_TRACE("The client configuration is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     return ::mmp_parse_end_pointw(&configuration->server, server);
 }

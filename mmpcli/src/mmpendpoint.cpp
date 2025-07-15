@@ -40,7 +40,7 @@ int mmp_parse_end_pointw(_Out_ sockaddr_storage *end_point,
         _In_z_ const wchar_t *string) {
     if (end_point == nullptr) {
         MMP_TRACE("The output pointer for the end point is invalid.");
-        return ERROR_INVALID_PARAMETER;
+        RETURN_WIN32(ERROR_INVALID_PARAMETER);
     }
     if (string == nullptr) {
         MMP_TRACE("The input string to be parsed is invalid.");
@@ -97,6 +97,6 @@ int mmp_parse_end_pointw(_Out_ sockaddr_storage *end_point,
     }
 
     MMP_TRACE("The input string does not designate a valid address.");
-    return ERROR_INVALID_PARAMETER;
+    RETURN_WIN32(ERROR_INVALID_PARAMETER);
 }
 

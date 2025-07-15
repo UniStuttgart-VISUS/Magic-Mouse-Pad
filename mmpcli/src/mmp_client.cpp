@@ -76,7 +76,7 @@ _Success_(return == 0) int mmp_client::discover(void) {
                     L"mouse pad, but the client address family is %d.",
                     this->_config.server.ss_family,
                     this->_config.client.ss_family);
-                return WSAEAFNOSUPPORT;
+                RETURN_WIN32(WSAEAFNOSUPPORT);
 
             } else {
                 MMP_TRACE(L"An IPv4 address was provided for the magic mouse "
@@ -106,7 +106,7 @@ _Success_(return == 0) int mmp_client::discover(void) {
                     L"mouse pad, but the client address family is %d.",
                     this->_config.server.ss_family,
                     this->_config.client.ss_family);
-                return WSAEAFNOSUPPORT;
+                RETURN_WIN32(WSAEAFNOSUPPORT);
 
             } else {
                 MMP_TRACE(L"An IPv6 address was provided for the magic mouse "
@@ -119,7 +119,7 @@ _Success_(return == 0) int mmp_client::discover(void) {
             MMP_TRACE(L"Either IPv4 or IPv6 must be specified as the address "
                 L"family, but %d was provided.",
                 this->_config.server.ss_family);
-            return WSAEAFNOSUPPORT;
+            RETURN_WIN32(WSAEAFNOSUPPORT);
     }
 
     if (port == 0) {
@@ -148,7 +148,7 @@ _Success_(return == 0) int mmp_client::discover(void) {
         auto retval = ::WSAGetLastError();
         MMP_TRACE(L"Failed to create a UDP socket for discovery: 0x%x.",
             retval);
-        return retval;
+        RETURN_WIN32(retval);
     }
 
     MMP_TRACE(L"Discovering magic mouse pad at port %d.", ::ntohs(port));
@@ -226,13 +226,13 @@ _Success_(return == 0) int mmp_client::discover(void) {
 
         if (addresses.empty()) {
             MMP_TRACE(L"No working broadcast addresses available.");
-            return ::WSAGetLastError();
+            RETURN_LAST_ERROR();
         }
 
         std::this_thread::sleep_for(rate_limit);
     }
 
-    return found ? 0 : ERROR_TIMEOUT;
+    return found ? 0 : HRESULT_FROM_WIN32(ERROR_TIMEOUT);
 }
 
 
@@ -247,7 +247,7 @@ _Success_(return == 0) int mmp_client::start(void) noexcept {
             std::memory_order_relaxed)) {
         MMP_TRACE(L"The client is already running, so it cannot be started "
             L"again.");
-        return ERROR_INVALID_OPERATION;
+        RETURN_WIN32(ERROR_INVALID_OPERATION);
     }
 
     try {
@@ -255,7 +255,7 @@ _Success_(return == 0) int mmp_client::start(void) noexcept {
     } catch (std::bad_alloc) {
         MMP_TRACE(L"Insufficient memory to allocate a reordering buffer "
             L"for %u elements.", this->_config.reordering_buffer);
-        return ERROR_OUTOFMEMORY;
+        RETURN_WIN32(ERROR_OUTOFMEMORY);
     }
 
     switch (this->_config.client.ss_family) {
@@ -296,7 +296,7 @@ _Success_(return == 0) int mmp_client::start(void) noexcept {
     } catch (std::system_error ex) {
         MMP_TRACE(L"Failed to start the client receiver thread: %hs",
             ex.what());
-        return ex.code().value();
+        RETURN_WIN32(ex.code().value());
     }
 
     return 0;
@@ -403,7 +403,7 @@ int mmp_client::bind(_In_ wil::unique_socket& socket,
 
         default:
             MMP_TRACE(L"Incompatible address family %d.", address.ss_family);
-            return WSAEAFNOSUPPORT;
+            RETURN_WIN32(WSAEAFNOSUPPORT);
     }
 
 #if (defined(_DEBUG) || defined(DEBUG))
@@ -515,7 +515,7 @@ int mmp_client::connect(void) {
             == SOCKET_ERROR) {
         auto retval = ::WSAGetLastError();
         MMP_TRACE("Announcement failed with error code %d.", retval);
-        return retval;
+        RETURN_WIN32(retval);
     }
 
     return 0;
