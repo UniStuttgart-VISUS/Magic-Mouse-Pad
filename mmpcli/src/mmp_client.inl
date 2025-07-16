@@ -46,12 +46,15 @@ std::pair<std::int32_t, std::int32_t> mmp_client::xform_position(
     y += this->_offset.second;
 
     if (clip) {
+        MMP_TRACE(L"Clipping mouse position (%d, %d) to [%u, %u].", x, y,
+            this->_config.width, this->_config.height);
         mmp_client::clip(x, y, this->_config.width, this->_config.height);
     }
 
     if ((this->_config.flags & mmp_flag_local) != 0) {
         x -= this->_config.offset_x;
         y -= this->_config.offset_y;
+        MMP_TRACE(L"Translated mouse position to local (%d, %d).", x, y);
 
         if (clip) {
             // If requested, clip the position to the local screen. Furthermore,
@@ -60,6 +63,8 @@ std::pair<std::int32_t, std::int32_t> mmp_client::xform_position(
             const auto w = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
             const auto h = ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
+            MMP_TRACE(L"Clipping mouse position (%d, %d) to [%u, %u].", x, y,
+                w, h);
             const auto clipped = mmp_client::clip(x, y, w, h);
 
             if (hide) {
