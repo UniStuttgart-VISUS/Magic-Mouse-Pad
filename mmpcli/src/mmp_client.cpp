@@ -27,8 +27,10 @@
  */
 mmp_client::mmp_client(_In_ const mmp_configuration& config)
     : _config(config),
+    _offset(0, 0),
     _running(false),
     _sequence_number(0),
+    _update_offset(false),
     _wsa_data({ 0 }) { }
 
 
@@ -287,6 +289,10 @@ _Success_(return == 0) int mmp_client::start(void) noexcept {
     MMP_TRACE(L"Allocating kernel event for asynchronous I/O.");
     RETURN_IF_FAILED(this->_event.create());
 
+    // If we are supposed to set an explicit start position, we need to remember
+    // this before we receive the first message from the server.
+    this->_update_offset = ((this->_config.flags & mmp_flag_set_start) != 0);
+
     MMP_TRACE(L"Announcing client to Magic Mouse Pad.");
     RETURN_IF_WIN32_ERROR(this->connect());
 
@@ -535,6 +541,7 @@ void mmp_client::on_mouse_button(_In_ const mmp_msg_mouse_button *msg) {
 
         if (this->_config.on_mouse_button != nullptr) {
             auto p = this->xform_position(msg);
+            MMP_TRACE("Reporting button event at (%d, %d).", p.first, p.second);
             this->_config.on_mouse_button(msg->button, msg->down, p.first,
                 p.second, this->_config.context);
         }
@@ -553,6 +560,7 @@ void mmp_client::on_mouse_move(_In_ const mmp_msg_mouse_move *msg) {
 
         if (this->_config.on_mouse_move != nullptr) {
             auto p = this->xform_position(msg);
+            MMP_TRACE("Reporting mouse position (%d, %d).", p.first, p.second);
             this->_config.on_mouse_move(p.first, p.second,
                 this->_config.context);
         }

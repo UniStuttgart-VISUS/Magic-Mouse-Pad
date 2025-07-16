@@ -30,8 +30,20 @@ std::pair<std::int32_t, std::int32_t> mmp_client::xform_position(
     assert(message != nullptr);
     const auto clip = ((this->_config.flags & mmp_flag_clip) != 0);
     const auto hide = ((this->_config.flags & mmp_flag_hide_remote) != 0);
+
     std::int32_t x = ::ntohl(message->x);
     std::int32_t y = ::ntohl(message->y);
+
+    if (this->_update_offset) {
+        this->_update_offset = false;
+        this->_offset.first = this->_config.start_x - x;
+        this->_offset.second = this->_config.start_y - y;
+        MMP_TRACE(L"Setting start offset to (%d, %d).", this->_offset.first,
+            this->_offset.second);
+    }
+
+    x += this->_offset.first;
+    y += this->_offset.second;
 
     if (clip) {
         mmp_client::clip(x, y, this->_config.width, this->_config.height);

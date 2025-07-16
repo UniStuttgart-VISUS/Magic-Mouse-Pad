@@ -185,13 +185,14 @@ private:
 
     mmp_configuration _config;
     wil::unique_event_nothrow _event;
+    std::pair<std::int32_t, std::int32_t> _offset;
     std::thread _receiver;
     std::vector<buffer_type> _reordering_buffer;
     std::atomic<bool> _running;
     std::atomic<mmp_seq_no> _sequence_number;
     wil::unique_socket _socket;
+    bool _update_offset;
     WSADATA _wsa_data;
-
 };
 
 #include "mmp_client.inl"

@@ -44,6 +44,16 @@
 /// </summary>
 #define mmp_flag_hide_remote ((uint32_t) 0x00000004)
 
+/// <summary>
+/// If this flag is set in the <see cref="mmp_configuration"/>, the client will
+/// apply <see cref="mmp_configuration::start_x"/> and
+/// <see cref="mmp_configuration::start_y"/> as the initial position of the
+/// mouse when the first position is received from the magic mouse pad. This
+/// way, the position is independent from whatever has been done on the Magic
+/// Mouse Pad before the client connected.
+/// </summary>
+#define mmp_flag_set_start ((uint32_t) 0x00000008)
+
 
 /// <summary>
 /// The default port number to be used for the magic mouse pad.
