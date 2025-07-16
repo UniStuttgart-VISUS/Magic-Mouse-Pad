@@ -529,6 +529,10 @@ void mmp_client::on_mouse_button(_In_ const mmp_msg_mouse_button *msg) {
     assert(msg != nullptr);
     assert(msg->id == ::htonl(mmp_msgid_mouse_button));
     if (this->track_sequence_number(msg)) {
+        MMP_TRACE("Button %d %s at (%d, %d).", msg->button,
+            msg->down ? "pressed" : "released", ::ntohl(msg->x),
+            ::ntohl(msg->y));
+
         if (this->_config.on_mouse_button != nullptr) {
             auto p = this->xform_position(msg);
             this->_config.on_mouse_button(msg->button, msg->down, p.first,
@@ -545,6 +549,8 @@ void mmp_client::on_mouse_move(_In_ const mmp_msg_mouse_move *msg) {
     assert(msg != nullptr);
     assert(msg->id == ::htonl(mmp_msgid_mouse_move));
     if (this->track_sequence_number(msg)) {
+        MMP_TRACE("Mouse moved to (%d, %d).", ::ntohl(msg->x), ::ntohl(msg->y));
+
         if (this->_config.on_mouse_move != nullptr) {
             auto p = this->xform_position(msg);
             this->_config.on_mouse_move(p.first, p.second,
