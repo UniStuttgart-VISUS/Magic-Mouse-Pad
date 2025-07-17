@@ -15,8 +15,7 @@
 #include <Windows.h>
 #include <tchar.h>
 
-#include <wil/resource.h>
-
+#include "renderer.h"
 #include "server.h"
 #include "settings.h"
 
@@ -161,6 +160,7 @@ private:
     int _dy;
     int _height;
     HINSTANCE _instance;
+    std::unique_ptr<renderer> _renderer;
     std::unique_ptr<server> _server;
     settings _settings;
     int _width;

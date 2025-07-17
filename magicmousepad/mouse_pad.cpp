@@ -26,6 +26,7 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
         _In_z_ const TCHAR *command_line) {
     register_window_class(instance);
 
+    // Create the mouse pad window.
     auto exStyle = WS_EX_APPWINDOW;
     auto style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
     auto x = CW_USEDEFAULT;
@@ -55,6 +56,9 @@ std::unique_ptr<mouse_pad> mouse_pad::create(_In_ HINSTANCE instance,
         instance,
         retval.get()));
     THROW_LAST_ERROR_IF(!retval->_window);
+
+    // Create the renderer.
+    retval->_renderer = std::make_unique<renderer>(retval->_window.get());
 
     // Parse the configuration file.
     std::ifstream stream;
@@ -240,6 +244,7 @@ LRESULT mouse_pad::on_key_down(_In_ const mmp_key key,
         if (key == mmp_key_pause) {
             ::ReleaseCapture();
             this->_active = false;
+            this->_renderer->active(this->_active);
         }
     }
 
@@ -272,6 +277,7 @@ LRESULT mouse_pad::on_mouse_down(
     }
 
     this->_active = true;
+    this->_renderer->active(this->_active);
     ::SetCapture(this->_window.get());
 
     mmp_msg_mouse_button msg;
@@ -346,10 +352,8 @@ LRESULT mouse_pad::on_mouse_up(_In_ const mmp_mouse_button button,
  * mouse_pad::on_paint
  */
 LRESULT mouse_pad::on_paint(void) noexcept {
-    PAINTSTRUCT ps;
-    auto hdc = ::BeginPaint(this->_window.get(), &ps);
-
-    ::EndPaint(this->_window.get(), &ps);
+    assert(this->_renderer != nullptr);
+    this->_renderer->draw();
     return 0;
 }
 
@@ -361,5 +365,10 @@ LRESULT mouse_pad::on_resize(_In_ const std::uint16_t width,
         _In_ const std::uint16_t height) noexcept {
     this->_width = width;
     this->_height = height;
+
+    if (this->_renderer != nullptr) {
+        this->_renderer->resize(width, height);
+    }
+
     return 0;
 }

@@ -4,6 +4,7 @@
 //
 #define IDS_APPTITLE                    101
 #define IDS_ERROR_SERVER                102
+#define IDS_ESCAPE_PAUSE                103
 
 // Next default values for new objects
 // 
